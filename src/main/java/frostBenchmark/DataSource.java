@@ -6,12 +6,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.geojson.Point;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
+import de.fraunhofer.iosb.ilt.sta.model.Id;
 import de.fraunhofer.iosb.ilt.sta.model.IdLong;
 import de.fraunhofer.iosb.ilt.sta.model.Location;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
@@ -31,7 +34,8 @@ public class DataSource implements Runnable {
 	private int nbEntries = 0;
 	private boolean running = false;
 	private long POSTDELAY = 1000;
-	private static Properties dataSources = null;
+	
+	static Properties dataSources = null;
 
 	private Datastream datastream;
 
@@ -40,8 +44,10 @@ public class DataSource implements Runnable {
 	public DataSource(SensorThingsService sensorThingsService) {
 		service = sensorThingsService;
 	}
-
-	private void loadDataSourceProperties() {
+	
+	public static Id thingId = null;
+	
+	static void loadDataSourceProperties() {
 		dataSources = new Properties();
         try {
         	dataSources.load(new FileInputStream("DataSources.properties"));
@@ -56,7 +62,7 @@ public class DataSource implements Runnable {
 		}
 	}
 	
-	private void saveDataSourceProperties () {
+	static void saveDataSourceProperties () {
 		try {
 			dataSources.store(new FileOutputStream("DataSources.properties"), "Benchmark Data Source Identifiers");
 			Run.LOGGER.info("DataSource identifiers have been changed. Properties file was updated");
@@ -83,63 +89,73 @@ public class DataSource implements Runnable {
 		if (dataSources == null) loadDataSourceProperties();
 		boolean propertiesToBeSaved = false;
 		
-		if (dataSources.getProperty(name+"-Sensor") != null) {
-			long id = Long.parseLong(dataSources.getProperty(name+"-Sensor"));
+		String sensorName = name+"-Sensor";
+		if (dataSources.getProperty(sensorName) != null) {
+			long id = Long.parseLong(dataSources.getProperty(sensorName));
 			sensor = service.sensors().find(id);
 		} 
 		if (sensor == null) {
-			sensor = new Sensor(name, "Random Data", "text", "Some metadata.");
+			sensor = new Sensor(sensorName, "Random Data", "text", "Some metadata.");
 			service.create(sensor);
-			dataSources.setProperty(name+"-Sensor", String.valueOf(sensor.getId()));
+			dataSources.setProperty(sensorName, String.valueOf(sensor.getId()));
 			propertiesToBeSaved = true;
 		}
 		
-		if (dataSources.getProperty(name+"-ObservedProperty") != null) {
-			long id = Long.parseLong(dataSources.getProperty(name+"-ObservedProperty"));
+		String observedPropertyName = name+"-ObservedProperty";
+		if (dataSources.getProperty(observedPropertyName) != null) {
+			long id = Long.parseLong(dataSources.getProperty(observedPropertyName));
 			obsProp1 = service.observedProperties().find(id);
 		} 
 		if (obsProp1 == null) {
-			obsProp1 = new ObservedProperty(name, new URI("http://ucom.org/temperature"), "random temperature");
+			obsProp1 = new ObservedProperty(observedPropertyName, new URI("http://ucom.org/temperature"), "random temperature");
 			service.create(obsProp1);
-			dataSources.setProperty(name+"-ObservedProperty", String.valueOf(obsProp1.getId()));
+			dataSources.setProperty(observedPropertyName, String.valueOf(obsProp1.getId()));
 			propertiesToBeSaved = true;
 		}
 
-		if (dataSources.getProperty(name+"-Thing") != null) {
-			long id = Long.parseLong(dataSources.getProperty(name+"-Thing"));
+		String thingName = "Benchmark";
+		if (dataSources.getProperty(thingName) != null) {
+			long id = Long.parseLong(dataSources.getProperty(thingName));
 			myThing = service.things().find(id);
 		} 
 		if (myThing == null) {
-			myThing = new Thing(name, "Benchmark Random Thing");
+			myThing = new Thing(thingName, "Benchmark Random Thing");
+			HashMap<String,Object> thingProperties = new HashMap<String,Object>();
+			thingProperties.put ("state", "stopped");
+			
+			myThing.setProperties(thingProperties);
 			service.create(myThing);
-			dataSources.setProperty(name+"-Thing", String.valueOf(myThing.getId()));
+			dataSources.setProperty(thingName, String.valueOf(myThing.getId()));
 			propertiesToBeSaved = true;
 		}
+		thingId = myThing.getId();
 		
-		if (dataSources.getProperty(name+"-Location") != null) {
-			long id = Long.parseLong(dataSources.getProperty(name+"-Location"));
+		String locationName = name+"-Location";
+		if (dataSources.getProperty(locationName) != null) {
+			long id = Long.parseLong(dataSources.getProperty(locationName));
 			location = service.locations().find(id);
 		} 
 		if (location == null) {
-			location = new Location(name, "Benchmark Random Location", "application/vnd.geo+json", new Point(8, 52));
+			location = new Location(locationName, "Benchmark Random Location", "application/vnd.geo+json", new Point(8, 52));
 			location.getThings().add(myThing);
 			service.create(location);
-			dataSources.setProperty(name+"-Location", String.valueOf(location.getId()));
+			dataSources.setProperty(locationName, String.valueOf(location.getId()));
 			propertiesToBeSaved = true;
 		}
 		
-		if (dataSources.getProperty(name+"-DataStream") != null) {
-			long id = Long.parseLong(dataSources.getProperty(name+"-DataStream"));
+		String dataSourceName = name+"-DataStream";
+		if (dataSources.getProperty(dataSourceName) != null) {
+			long id = Long.parseLong(dataSources.getProperty(dataSourceName));
 			datastream = service.datastreams().find(id);
 		} 
 		if (datastream == null) {
-			datastream = new Datastream(name, "Benchmark Random Stream", name,
-					new UnitOfMeasurement("degree celsius", "°C", "ucum:T"));
+			datastream = new Datastream(dataSourceName, "Benchmark Random Stream", name,
+					new UnitOfMeasurement("observation rate", "observation per sec", "ucum:T"));
 			datastream.setThing(myThing);
 			datastream.setSensor(sensor);
 			datastream.setObservedProperty(obsProp1);
 			service.create(datastream);
-			dataSources.setProperty(name+"-DataStream", String.valueOf(datastream.getId()));
+			dataSources.setProperty(dataSourceName, String.valueOf(datastream.getId()));
 			propertiesToBeSaved = true;
 		}
 		
@@ -149,11 +165,13 @@ public class DataSource implements Runnable {
 	}
 
 	public void run() {
+		long startTime = System.currentTimeMillis();
 		Observation o = null;
 		double c;
 		running = true;
 		while (running) {
-			c = nbEntries;
+			long currentTime = System.currentTimeMillis();
+			c = (double) nbEntries * 1000.0 / ((currentTime > startTime) ? currentTime - startTime : 1);
 			o = new Observation(c, datastream);
 			nbEntries++;
 			try {

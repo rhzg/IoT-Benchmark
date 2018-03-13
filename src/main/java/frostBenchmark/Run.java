@@ -22,9 +22,14 @@ public class Run {
 	private static final String WORKERS = "WORKERS";
 	private static final String POSTDELAY = "POSTDELAY";
 
-	private static SensorThingsService service;
+	static SensorThingsService service;
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Run.class);
 	public static Properties props;
+
+	private static DataSource[] dsList;
+	private static int lapTime = 1000;
+	private static int workers = 1;
+	private static long postDelay = 0;
 
 	/**
 	 * load properties and initialize SensorThingsSerice endpoint
@@ -33,10 +38,13 @@ public class Run {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	private static SensorThingsService loadProperties() throws IOException, URISyntaxException {
+	static void initializeSerice() throws IOException, URISyntaxException {
 		props = new Properties();
 		try {
 			props.load(new FileInputStream("config.properties"));
+			lapTime = Integer.parseInt(props.getProperty(DURATION));
+			workers = Integer.parseInt(props.getProperty(WORKERS));
+			postDelay = Long.parseLong(props.getProperty(POSTDELAY));
 
 		} catch (final FileNotFoundException e) {
 			LOGGER.warn("No properties file found!");
@@ -45,6 +53,8 @@ public class Run {
 			props.setProperty(PROXYHOST, "proxy-ka.iosb.fraunhofer.de");
 			props.setProperty(PROXYPORT, "80");
 			props.setProperty(DURATION, "10000");
+			props.setProperty(WORKERS, "1");
+			props.setProperty(POSTDELAY, "10");
 
 			props.store(new FileOutputStream("config.properties"), "FROST Benchmark Properties");
 			LOGGER.warn("New file has been created with default values. Please check your correct settings");
@@ -52,43 +62,53 @@ public class Run {
 		}
 
 		final URL baseUri = new URL(props.getProperty(BASE_URL));
-		return new SensorThingsService(baseUri);
+		service = new SensorThingsService(baseUri);
 	}
 
-	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
-		
-		LOGGER.info("Benchmark initializing");
-
-		service = loadProperties();
-
-		int lapTime = Integer.parseInt(props.getProperty(DURATION));
-		int workers = Integer.parseInt(props.getProperty(WORKERS));
-		long postDelay = Long.parseLong(props.getProperty(POSTDELAY));
-
-		DataSource[] dsList = new DataSource[workers];
-		for (int i=0; i<workers; i++) {
-			dsList[i] = new DataSource (service).intialize("Benchmark"+i);		
+	static void initWorkLoad() throws ServiceFailureException, URISyntaxException {
+		LOGGER.trace("Benchmark initializing, starting workers");
+		dsList = new DataSource[workers];
+		for (int i = 0; i < workers; i++) {
+			dsList[i] = new DataSource(service).intialize("Benchmark" + i);
 		}
+		LOGGER.info("Benchmark initialized");
+	}
 
-		LOGGER.info("Benchmark initialized, starting workers  --------");
-		for (int i=0; i<workers; i++) {
-			dsList[i].startUp(postDelay);		
+	static void startWorkLoad() {
+		LOGGER.trace("Benchmark start workload");
+		for (int i = 0; i < workers; i++) {
+			dsList[i].startUp(postDelay);
 		}
-		
-		LOGGER.info("Benchmark starting for " + lapTime + " msec ---------------");
+		LOGGER.info("Benchmark workload started");
+	}
 
-		Thread.sleep(lapTime);
-		
+	static void stopWorkLoad() {
+		LOGGER.trace("Benchmark finishing");
 		int entries = 0;
-		for (int i=0; i<workers; i++) {
+		for (int i = 0; i < workers; i++) {
 			entries += dsList[i].endUp();
 		}
 
+		LOGGER.info(1000 * entries / lapTime + " entries created per sec");
+		LOGGER.info("Benchmark finished");
+
+	}
+
+	public static void main(String[] args)
+			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
+
+		initializeSerice();
+
+		initWorkLoad();
+
+		startWorkLoad();
 		
+
+		LOGGER.info("Benchmark running for " + lapTime + " msec");
+		Thread.sleep(lapTime);
+
+		stopWorkLoad();
 		
-		LOGGER.info("Benchmark finished ------------------------------");
-		LOGGER.info(1000*entries/lapTime + " entries created per sec");
-		LOGGER.info("Benchmark finished ------------------------------");
 	}
 
 }
