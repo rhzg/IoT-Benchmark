@@ -17,7 +17,7 @@ public class Controller {
 
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
-		// TODO Auto-generated method stub
+		String helpMsg = "Available command are <run [msec]>, <stop>, <help>, <quit>";
 
 		Run.initializeSerice();
 
@@ -27,7 +27,7 @@ public class Controller {
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 
-		System.out.println("Available command are <run>, <stop>, <help>, <quit>");
+		System.out.println(helpMsg);
 		boolean running = true;
 		Scanner sc = new Scanner(System.in);
 		while (running) {
@@ -39,7 +39,7 @@ public class Controller {
 				myThing.setProperties(properties);
 				Run.service.update(myThing);
 
-				if (cmd.length > 0) {
+				if (cmd.length > 1) {
 					int ms = Integer.parseInt(cmd[1]);
 					System.out.println("running for " + ms + " msec");
 					Thread.sleep(ms);
@@ -55,7 +55,7 @@ public class Controller {
 				Run.service.update(myThing);
 			}
 			if (cmd[0].equalsIgnoreCase("help")) {
-				System.out.println("Available command are <run>, <stop>, <help>, <quit>");
+				System.out.println(helpMsg);
 			}
 			if (cmd[0].equalsIgnoreCase("quit")) {
 				running = false;

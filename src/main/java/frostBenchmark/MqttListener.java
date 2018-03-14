@@ -55,7 +55,7 @@ public class MqttListener implements MqttCallback {
 		int qos = 2;
 		String broker = "localhost";
 		int port = 1883;
-		String clientId = "BechmarkClient";
+		String clientId = "BechmarkClient" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
 		boolean ssl = false;
 		String protocol = "tcp://";
@@ -279,15 +279,12 @@ public class MqttListener implements MqttCallback {
 	 * @see MqttCallback#messageArrived(String, MqttMessage)
 	 */
 	public void messageArrived(String topic, MqttMessage message) throws MqttException, ServiceFailureException, URISyntaxException {
-		// Called when a message arrives from the server that matches any
-		// subscription made by the client
-		String time = new Timestamp(System.currentTimeMillis()).toString();
-		System.out.println("Time:\t" + time + "  Topic:\t" + topic + "  Message:\t" + new String(message.getPayload())
-				+ "  QoS:\t" + message.getQos());
 		
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
 		JSONObject p = (JSONObject) msg.get("properties");
 		String state = p.getString("state");
+		
+		Run.LOGGER.info("Entering " + state + " mode");
 
 		if (state.equalsIgnoreCase(RUNNING)) {
 			// start the client

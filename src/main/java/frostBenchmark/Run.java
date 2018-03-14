@@ -27,6 +27,8 @@ public class Run {
 	public static Properties props;
 
 	private static DataSource[] dsList;
+	private static long startTime = 1000;
+	private static long stopTime = 1000;
 	private static int lapTime = 1000;
 	private static int workers = 1;
 	private static long postDelay = 0;
@@ -79,17 +81,19 @@ public class Run {
 		for (int i = 0; i < workers; i++) {
 			dsList[i].startUp(postDelay);
 		}
+		startTime = System.currentTimeMillis();
 		LOGGER.info("Benchmark workload started");
 	}
 
 	static void stopWorkLoad() {
 		LOGGER.trace("Benchmark finishing");
+		stopTime = System.currentTimeMillis();
 		int entries = 0;
 		for (int i = 0; i < workers; i++) {
 			entries += dsList[i].endUp();
 		}
 
-		LOGGER.info(1000 * entries / lapTime + " entries created per sec");
+		LOGGER.info(1000 * entries / (stopTime - startTime) + " entries created per sec");
 		LOGGER.info("Benchmark finished");
 
 	}

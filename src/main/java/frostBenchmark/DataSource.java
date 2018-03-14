@@ -197,6 +197,7 @@ public class DataSource implements Runnable {
 
 	public DataSource startUp(long delay) {
 		POSTDELAY = delay;
+		nbEntries = 0;
 		(myThread = new Thread(this)).start();
 		return this;
 	}
