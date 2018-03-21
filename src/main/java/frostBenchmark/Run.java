@@ -74,7 +74,7 @@ public class Run {
 		LOGGER.trace("Benchmark initializing, starting workers");
 		dsList = new DataSource[workers];
 		for (int i = 0; i < workers; i++) {
-			dsList[i] = new DataSource(service).intialize("Benchmark" + i);
+			dsList[i] = new DataSource(service).intialize("Benchmark." + i);
 		}
 		LOGGER.info("Benchmark initialized");
 	}

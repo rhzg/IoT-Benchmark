@@ -2,7 +2,6 @@ package frostBenchmark;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.sql.Timestamp;
 import java.util.Arrays;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -16,9 +15,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 
-public class MqttListener implements MqttCallback {
+public class MqttHelper implements MqttCallback {
 
 	int state = BEGIN;
 
@@ -34,68 +32,10 @@ public class MqttListener implements MqttCallback {
 	static final String RUNNING = "running";
 	static final String FINISHED = "finished";
 
-	/**
-	 * The main entry point of the sample.
-	 *
-	 * This method handles parsing the arguments specified on the command-line
-	 * before performing the specified action.
-	 * 
-	 * @throws URISyntaxException
-	 * @throws IOException
-	 * @throws ServiceFailureException
-	 */
-	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
-
-		// MQTT Default settings:
-		boolean quietMode = false;
-		// String topic = "v1.0/Datastreams(569)/Observations";
-		String topic = "v1.0/Things(569)/properties";
-		int qos = 2;
-		String broker;
-		int port = 1883;
-		String clientId = "BechmarkClient" + System.currentTimeMillis();
-		boolean cleanSession = true; // Non durable subscriptions
-		boolean ssl = false;
-		String protocol = "tcp://";
-		if (ssl) {
-			protocol = "ssl://";
-		}
-
-		// SensorThings Server settings
-		Run.initializeSerice();
-		Run.initWorkLoad();
-
-		topic = "v1.0/Things(" + DataSource.thingId.toString() + ")/properties";
-
-		try {
-			// Create an instance of the Sample client wrapper
-			broker = Run.props.getProperty(Run.BROKER);
-			String url = protocol + broker + ":" + port;
-			if (broker == null) {
-				broker = "localhost";
-			}
-			MqttListener sampleClient = new MqttListener(url, clientId, cleanSession, quietMode);
-
-			sampleClient.subscribe(topic, qos);
-
-		} catch (MqttException me) {
-			// Display full details of any exception that occurs
-			System.out.println("reason " + me.getReasonCode());
-			System.out.println("msg " + me.getMessage());
-			System.out.println("loc " + me.getLocalizedMessage());
-			System.out.println("cause " + me.getCause());
-			System.out.println("excep " + me);
-			me.printStackTrace();
-		} catch (Throwable th) {
-			System.out.println("Throwable caught " + th);
-			th.printStackTrace();
-		}
-	}
 
 	// Private instance variables
 	MqttAsyncClient client;
 	String brokerUrl;
-	private boolean quietMode;
 	private MqttConnectOptions conOpt;
 	private boolean clean;
 	Throwable ex = null;
@@ -120,10 +60,9 @@ public class MqttListener implements MqttCallback {
 	 *            the password for the user
 	 * @throws MqttException
 	 */
-	public MqttListener(String brokerUrl, String clientId, boolean cleanSession, boolean quietMode)
+	public MqttHelper(String brokerUrl, String clientId, boolean cleanSession)
 			throws MqttException {
 		this.brokerUrl = brokerUrl;
-		this.quietMode = quietMode;
 		this.clean = cleanSession;
 
 		try {
@@ -140,7 +79,7 @@ public class MqttListener implements MqttCallback {
 
 		} catch (MqttException e) {
 			e.printStackTrace();
-			log("Unable to set up client: " + e.toString());
+			Run.LOGGER.trace("Unable to set up client: " + e.toString());
 			System.exit(1);
 		}
 	}
@@ -158,7 +97,7 @@ public class MqttListener implements MqttCallback {
 				try {
 					waiter.wait(maxTTW);
 				} catch (InterruptedException e) {
-					log("timed out");
+					Run.LOGGER.trace("timed out");
 					e.printStackTrace();
 				}
 
@@ -199,7 +138,7 @@ public class MqttListener implements MqttCallback {
 				break;
 			case SUBSCRIBED:
 				// Block until Enter is pressed allowing messages to arrive
-				log("Press <Enter> to exit");
+				Run.LOGGER.trace("Press <Enter> to exit");
 				try {
 					System.in.read();
 				} catch (IOException e) {
@@ -226,19 +165,6 @@ public class MqttListener implements MqttCallback {
 		// }
 	}
 
-	/**
-	 * Utility method to handle logging. If 'quietMode' is set, this method does
-	 * nothing
-	 * 
-	 * @param message
-	 *            the message to log
-	 */
-	void log(String message) {
-		if (!quietMode) {
-			System.out.println(message);
-		}
-	}
-
 	/****************************************************************/
 	/* Methods to implement the MqttCallback interface */
 	/****************************************************************/
@@ -250,7 +176,7 @@ public class MqttListener implements MqttCallback {
 		// Called when the connection to the server has been lost.
 		// An application may choose to implement reconnection
 		// logic at this point. This sample simply exits.
-		log("Connection to " + brokerUrl + " lost!" + cause);
+		Run.LOGGER.error("Connection to " + brokerUrl + " lost!" + cause);
 		System.exit(1);
 	}
 
@@ -272,7 +198,7 @@ public class MqttListener implements MqttCallback {
 		//
 		// note that token.getTopics() returns an array so we convert to a string
 		// before printing it on the console
-		log("Delivery complete callback: Publish Completed " + Arrays.toString(token.getTopics()));
+		Run.LOGGER.trace("Delivery complete callback: Publish Completed " + Arrays.toString(token.getTopics()));
 	}
 
 	/**
@@ -315,11 +241,11 @@ public class MqttListener implements MqttCallback {
 			// Connect to the server
 			// Get a token and setup an asynchronous listener on the token which
 			// will be notified once the connect completes
-			log("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
+			Run.LOGGER.info("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
 
 			IMqttActionListener conListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					log("Connected");
+					Run.LOGGER.info("Connected");
 					state = CONNECTED;
 					carryOn();
 				}
@@ -327,7 +253,7 @@ public class MqttListener implements MqttCallback {
 				public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 					ex = exception;
 					state = ERROR;
-					log("connect failed" + exception);
+					Run.LOGGER.error("connect failed" + exception);
 					carryOn();
 				}
 
@@ -341,7 +267,7 @@ public class MqttListener implements MqttCallback {
 
 			try {
 				// Connect using a non-blocking connect
-				client.connect(conOpt, "Connect sample context", conListener);
+				client.connect(conOpt, "SensorCluster Connect for Command Stream", conListener);
 			} catch (MqttException e) {
 				// If though it is a non-blocking connect an exception can be
 				// thrown if validation of parms fails or other checks such
@@ -362,11 +288,11 @@ public class MqttListener implements MqttCallback {
 			// Make a subscription
 			// Get a token and setup an asynchronous listener on the token which
 			// will be notified once the subscription is in place.
-			log("Subscribing to topic \"" + topicName + "\" qos " + qos);
+			Run.LOGGER.trace("Subscribing to topic \"" + topicName + "\" qos " + qos);
 
 			IMqttActionListener subListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					log("Subscribe Completed");
+					Run.LOGGER.trace("Subscribe Completed");
 					state = SUBSCRIBED;
 					carryOn();
 				}
@@ -374,7 +300,7 @@ public class MqttListener implements MqttCallback {
 				public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 					ex = exception;
 					state = ERROR;
-					log("Subscribe failed" + exception);
+					Run.LOGGER.trace("Subscribe failed" + exception);
 					carryOn();
 				}
 
@@ -403,11 +329,11 @@ public class MqttListener implements MqttCallback {
 	public class Disconnector {
 		public void doDisconnect() {
 			// Disconnect the client
-			log("Disconnecting");
+			Run.LOGGER.trace("Disconnecting");
 
 			IMqttActionListener discListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					log("Disconnect Completed");
+					Run.LOGGER.info("Disconnect Completed");
 					state = DISCONNECTED;
 					carryOn();
 				}
@@ -415,7 +341,7 @@ public class MqttListener implements MqttCallback {
 				public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 					ex = exception;
 					state = ERROR;
-					log("Disconnect failed" + exception);
+					Run.LOGGER.error("Disconnect failed" + exception);
 					carryOn();
 				}
 
