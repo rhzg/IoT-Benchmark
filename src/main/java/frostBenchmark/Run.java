@@ -15,13 +15,15 @@ import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 
 public class Run {
 
-	private static final String BASE_URL = "BASE_URL";
-	private static final String PROXYHOST = "proxyhost";
-	private static final String PROXYPORT = "proxyport";
-	private static final String DURATION = "DURATION";
-	private static final String WORKERS = "WORKERS";
-	private static final String POSTDELAY = "POSTDELAY";
+	static final String BASE_URL = "BASE_URL";
+	static final String BROKER = "BROKER";
+	static final String PROXYHOST = "proxyhost";
+	static final String PROXYPORT = "proxyport";
+	static final String DURATION = "DURATION";
+	static final String WORKERS = "WORKERS";
+	static final String POSTDELAY = "POSTDELAY";
 
+	static URL baseUri;
 	static SensorThingsService service;
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Run.class);
 	public static Properties props;
@@ -52,6 +54,7 @@ public class Run {
 			LOGGER.warn("No properties file found!");
 
 			props.setProperty(BASE_URL, "http://localhost:8080/FROST-Server.HTTP-1.6-SNAPSHOT/v1.0/");
+			props.setProperty(BROKER, "localhost");
 			props.setProperty(PROXYHOST, "proxy-ka.iosb.fraunhofer.de");
 			props.setProperty(PROXYPORT, "80");
 			props.setProperty(DURATION, "10000");
@@ -63,7 +66,7 @@ public class Run {
 			LOGGER.warn(props.toString());
 		}
 
-		final URL baseUri = new URL(props.getProperty(BASE_URL));
+		baseUri = new URL(props.getProperty(BASE_URL));
 		service = new SensorThingsService(baseUri);
 	}
 

@@ -30,30 +30,28 @@ public class MqttListener implements MqttCallback {
 	static final int FINISH = 5;
 	static final int ERROR = 6;
 	static final int DISCONNECT = 7;
-	
+
 	static final String RUNNING = "running";
 	static final String FINISHED = "finished";
-	
-
-	private static SensorThingsService service;
 
 	/**
 	 * The main entry point of the sample.
 	 *
 	 * This method handles parsing the arguments specified on the command-line
 	 * before performing the specified action.
-	 * @throws URISyntaxException 
-	 * @throws IOException 
-	 * @throws ServiceFailureException 
+	 * 
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * @throws ServiceFailureException
 	 */
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
 
 		// MQTT Default settings:
 		boolean quietMode = false;
-//		String topic = "v1.0/Datastreams(569)/Observations";
+		// String topic = "v1.0/Datastreams(569)/Observations";
 		String topic = "v1.0/Things(569)/properties";
 		int qos = 2;
-		String broker = "localhost";
+		String broker;
 		int port = 1883;
 		String clientId = "BechmarkClient" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
@@ -62,7 +60,6 @@ public class MqttListener implements MqttCallback {
 		if (ssl) {
 			protocol = "ssl://";
 		}
-		String url = protocol + broker + ":" + port;
 
 		// SensorThings Server settings
 		Run.initializeSerice();
@@ -72,10 +69,15 @@ public class MqttListener implements MqttCallback {
 
 		try {
 			// Create an instance of the Sample client wrapper
+			broker = Run.props.getProperty(Run.BROKER);
+			String url = protocol + broker + ":" + port;
+			if (broker == null) {
+				broker = "localhost";
+			}
 			MqttListener sampleClient = new MqttListener(url, clientId, cleanSession, quietMode);
 
 			sampleClient.subscribe(topic, qos);
-			
+
 		} catch (MqttException me) {
 			// Display full details of any exception that occurs
 			System.out.println("reason " + me.getReasonCode());
@@ -118,7 +120,8 @@ public class MqttListener implements MqttCallback {
 	 *            the password for the user
 	 * @throws MqttException
 	 */
-	public MqttListener(String brokerUrl, String clientId, boolean cleanSession, boolean quietMode) throws MqttException {
+	public MqttListener(String brokerUrl, String clientId, boolean cleanSession, boolean quietMode)
+			throws MqttException {
 		this.brokerUrl = brokerUrl;
 		this.quietMode = quietMode;
 		this.clean = cleanSession;
@@ -141,7 +144,6 @@ public class MqttListener implements MqttCallback {
 			System.exit(1);
 		}
 	}
-
 
 	/**
 	 * Wait for a maximum amount of time for a state change event to occur
@@ -274,16 +276,17 @@ public class MqttListener implements MqttCallback {
 	}
 
 	/**
-	 * @throws URISyntaxException 
-	 * @throws ServiceFailureException 
+	 * @throws URISyntaxException
+	 * @throws ServiceFailureException
 	 * @see MqttCallback#messageArrived(String, MqttMessage)
 	 */
-	public void messageArrived(String topic, MqttMessage message) throws MqttException, ServiceFailureException, URISyntaxException {
-		
+	public void messageArrived(String topic, MqttMessage message)
+			throws MqttException, ServiceFailureException, URISyntaxException {
+
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
 		JSONObject p = (JSONObject) msg.get("properties");
 		String state = p.getString("state");
-		
+
 		Run.LOGGER.info("Entering " + state + " mode");
 
 		if (state.equalsIgnoreCase(RUNNING)) {
@@ -349,8 +352,6 @@ public class MqttListener implements MqttCallback {
 			}
 		}
 	}
-
-
 
 	/**
 	 * Subscribe in a non-blocking way and then sit back and wait to be notified
