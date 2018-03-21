@@ -19,7 +19,7 @@ public class Processor extends MqttHelper {
 		int qos = 2;
 		String broker;
 		int port = 1883;
-		String clientId = "BechmarkSensorCluster-" + System.currentTimeMillis();
+		String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
