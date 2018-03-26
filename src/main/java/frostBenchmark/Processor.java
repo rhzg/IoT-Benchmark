@@ -3,7 +3,10 @@ package frostBenchmark;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONObject;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 
@@ -27,7 +30,7 @@ public class Processor extends MqttHelper {
 		Run.initializeSerice();
 		Run.initWorkLoad();
 
-		topic = "v1.0/Things(" + DataSource.thingId.toString() + ")/properties";
+		topic = "v1.0/Datastreams(3)/Observations";
 
 		try {
 			// Create an instance of the Sample client wrapper
@@ -54,4 +57,19 @@ public class Processor extends MqttHelper {
 		}
 	}
 
+	@Override
+	/**
+	 * @throws URISyntaxException
+	 * @throws ServiceFailureException
+	 * @see MqttCallback#messageArrived(String, MqttMessage)
+	 */
+	public void messageArrived(String topic, MqttMessage message)
+			throws MqttException, ServiceFailureException, URISyntaxException {
+
+		JSONObject msg = new JSONObject(new String(message.getPayload()));
+
+		Run.LOGGER.info("Update received");
+		Run.LOGGER.info(msg.toString());
+
+	}
 }
