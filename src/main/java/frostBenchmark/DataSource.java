@@ -73,7 +73,8 @@ public class DataSource implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			System.exit(1);
+			Run.LOGGER.error("Error while saving properties file. Exiting.");
+//			System.exit(1);
 		}
 	}
 
@@ -92,15 +93,19 @@ public class DataSource implements Runnable {
 		boolean propertiesToBeSaved = false;
 		
 		String sensorName = name+"-Sensor";
+		Run.LOGGER.debug("DataSource - Sensor " + sensorName);
 		if (dataSources.getProperty(sensorName) != null) {
 			long id = Long.parseLong(dataSources.getProperty(sensorName));
 			sensor = service.sensors().find(id);
+			Run.LOGGER.debug("DataSource - Sensor known id " + id);
 		} 
 		if (sensor == null) {
+			Run.LOGGER.debug("DataSource - Sensor not found");
 			sensor = new Sensor(sensorName, "Random Data", "text", "Some metadata.");
 			service.create(sensor);
 			dataSources.setProperty(sensorName, String.valueOf(sensor.getId()));
 			propertiesToBeSaved = true;
+			Run.LOGGER.debug("DataSource - Sensor new id " + String.valueOf(sensor.getId()));
 		}
 		
 		String observedPropertyName = name+"-ObservedProperty";

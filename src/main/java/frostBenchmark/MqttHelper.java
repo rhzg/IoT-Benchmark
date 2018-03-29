@@ -138,6 +138,7 @@ public class MqttHelper implements MqttCallback {
 				break;
 			case SUBSCRIBED:
 				// Block until Enter is pressed allowing messages to arrive
+				Run.LOGGER.trace("Subscribed");
 				Run.LOGGER.trace("Press <Enter> to exit");
 				try {
 					System.in.read();
@@ -210,18 +211,7 @@ public class MqttHelper implements MqttCallback {
 			throws MqttException, ServiceFailureException, URISyntaxException {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
-		JSONObject p = (JSONObject) msg.get("properties");
-		String state = p.getString("state");
-
-		Run.LOGGER.info("Entering " + state + " mode");
-
-		if (state.equalsIgnoreCase(RUNNING)) {
-			// start the client
-			Run.startWorkLoad();
-		} else if (state.equalsIgnoreCase(FINISHED)) {
-			// get the results
-			Run.stopWorkLoad();
-		}
+		Run.LOGGER.trace ("Message Arrived: " + msg.toString());
 	}
 
 	/****************************************************************/

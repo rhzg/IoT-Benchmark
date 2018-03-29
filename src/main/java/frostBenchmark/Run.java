@@ -53,7 +53,7 @@ public class Run {
 		} catch (final FileNotFoundException e) {
 			LOGGER.warn("No properties file found!");
 
-			props.setProperty(BASE_URL, "http://localhost:8080/FROST-Server.HTTP-1.6-SNAPSHOT/v1.0/");
+			props.setProperty(BASE_URL, "http://10.1.9.185:8080/FROST-Server/v1.0/");
 			props.setProperty(BROKER, "localhost");
 			props.setProperty(PROXYHOST, "proxy-ka.iosb.fraunhofer.de");
 			props.setProperty(PROXYPORT, "80");
@@ -67,7 +67,9 @@ public class Run {
 		}
 
 		baseUri = new URL(props.getProperty(BASE_URL));
+		LOGGER.debug("Creating SensorThingsService");
 		service = new SensorThingsService(baseUri);
+		LOGGER.debug("Creating SensorThingsService done");
 	}
 
 	static void initWorkLoad() throws ServiceFailureException, URISyntaxException {

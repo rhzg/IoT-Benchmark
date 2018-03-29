@@ -63,19 +63,9 @@ public class Controller {
 			}
 		}
 		sc.close();
-
-		// properties.put("state", RUNNING);
-		// myThing.setProperties(properties);
-		// Run.service.update(myThing);
-		//
-		// Thread.sleep(5000);
-		//
-		// properties.put("state", FINISHED);
-		// myThing.setProperties(properties);
-		// Run.service.update(myThing);
-
 	}
 
+	
 	private static Thing getBenchmarkThing() throws ServiceFailureException {
 		// find the Benchmark Thing to control the load generators
 		Thing myThing = null;

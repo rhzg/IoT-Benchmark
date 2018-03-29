@@ -3,7 +3,10 @@ package frostBenchmark;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONObject;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 
@@ -43,7 +46,9 @@ public class SensorCluster extends MqttHelper {
 
 		try {
 			// Create an instance of the Sample client wrapper
-			broker = Run.props.getProperty(Run.BROKER);
+			broker = System.getenv(Run.BROKER);
+			Run.LOGGER.trace("using mqtt broker: " + broker);
+//			broker = Run.props.getProperty(Run.BROKER);
 			if (broker == null) {
 				broker = "localhost";
 			}
@@ -66,4 +71,28 @@ public class SensorCluster extends MqttHelper {
 		}
 	}
 
+
+	@Override
+	/**
+	 * @throws URISyntaxException
+	 * @throws ServiceFailureException
+	 * @see MqttCallback#messageArrived(String, MqttMessage)
+	 */
+	public void messageArrived(String topic, MqttMessage message)
+			throws MqttException, ServiceFailureException, URISyntaxException {
+
+		JSONObject msg = new JSONObject(new String(message.getPayload()));
+		JSONObject p = (JSONObject) msg.get("properties");
+		String state = p.getString("state");
+
+		Run.LOGGER.info("Entering " + state + " mode");
+
+		if (state.equalsIgnoreCase(RUNNING)) {
+			// start the client
+			Run.startWorkLoad();
+		} else if (state.equalsIgnoreCase(FINISHED)) {
+			// get the results
+			Run.stopWorkLoad();
+		}
+	}
 }
