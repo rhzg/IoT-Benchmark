@@ -47,11 +47,11 @@ public class SensorCluster extends MqttHelper {
 		try {
 			// Create an instance of the Sample client wrapper
 			broker = System.getenv(Run.BROKER);
-			Run.LOGGER.trace("using mqtt broker: " + broker);
 //			broker = Run.props.getProperty(Run.BROKER);
 			if (broker == null) {
 				broker = "localhost";
 			}
+			Run.LOGGER.trace("using mqtt broker: " + broker);
 			String url = protocol + broker + ":" + port;
 			SensorCluster sensors = new SensorCluster(url, clientId, cleanSession);
 

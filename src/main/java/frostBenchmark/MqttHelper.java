@@ -52,12 +52,6 @@ public class MqttHelper implements MqttCallback {
 	 * @param cleanSession
 	 *            clear state at end of connection or not (durable or non-durable
 	 *            subscriptions)
-	 * @param quietMode
-	 *            whether debug should be printed to standard out
-	 * @param userName
-	 *            the username to connect with
-	 * @param password
-	 *            the password for the user
 	 * @throws MqttException
 	 */
 	public MqttHelper(String brokerUrl, String clientId, boolean cleanSession)

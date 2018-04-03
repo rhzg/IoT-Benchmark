@@ -7,7 +7,13 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
+import de.fraunhofer.iosb.ilt.sta.model.Observation;
 
 public class Processor extends MqttHelper {
 
@@ -38,7 +44,7 @@ public class Processor extends MqttHelper {
 				broker = "localhost";
 			}
 			String url = protocol + broker + ":" + port;
-			SensorCluster sensors = new SensorCluster(url, clientId, cleanSession);
+			Processor sensors = new Processor(url, clientId, cleanSession);
 
 			sensors.subscribe(topic, qos);
 
@@ -66,9 +72,38 @@ public class Processor extends MqttHelper {
 			throws MqttException, ServiceFailureException, URISyntaxException {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
+		
+		Object p = msg.get("phenomenonTime");
+		String o = msg.get("@iot.selfLink").toString();
+		String id = msg.get("@iot.id").toString();
+		long longId = Long.parseLong(id);
 
-		Run.LOGGER.info("Update received");
-		Run.LOGGER.info(msg.toString());
+		final ObjectMapper mapper = ObjectMapperFactory.get();
+		Observation entity;
+		try {
+			entity = mapper.readValue(message.getPayload(), Observation.class);
+			entity.setService(Run.service);
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Observation obs = Run.service.observations().find(longId);
+		
+//		Run.LOGGER.info("Update received, phenomenonTime = " + p.toString() + ", " + o.toString());
+//		Run.LOGGER.info(msg.toString());
+		System.out.print('.');
+
+		processObservation(obs);
+	}
+	
+	private void processObservation (Observation obs) {
 
 	}
 }
