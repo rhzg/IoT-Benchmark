@@ -1,6 +1,5 @@
 package frostBenchmark;
 
-import java.io.Console;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -9,11 +8,14 @@ import java.util.Scanner;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
+import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
 public class Controller {
 
 	static final String RUNNING = "running";
 	static final String FINISHED = "finished";
+	static final String BENCHMARK = "Benchmark";
+	static final String SESSION = "session";
 
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
@@ -66,22 +68,34 @@ public class Controller {
 	}
 
 	
-	private static Thing getBenchmarkThing() throws ServiceFailureException {
+	public static Thing getBenchmarkThing() throws ServiceFailureException {
 		// find the Benchmark Thing to control the load generators
 		Thing myThing = null;
-		String thingName = "Benchmark";
-		if (DataSource.dataSources.getProperty(thingName) != null) {
-			long id = Long.parseLong(DataSource.dataSources.getProperty(thingName));
-			myThing = Run.service.things().find(id);
+		String sessionId = System.getenv(SESSION);
+
+		// search for the session thing
+		EntityList<Thing> things = Run.service.things().query().select("name", "id", "description").list();
+		for (Thing thing : things) {
+			Run.LOGGER.trace(thing.toString());
+			if (sessionId.equalsIgnoreCase(thing.getDescription())) { // found it
+				myThing = Run.service.things().find(thing.getId());
+				break;
+			}
 		}
+		
+//		if (DataSource.dataSources.getProperty(thingName) != null) {
+//			long id = Long.parseLong(DataSource.dataSources.getProperty(thingName));
+//			myThing = Run.service.things().find(id);
+//		}
 		if (myThing == null) {
-			myThing = new Thing(thingName, "Benchmark Random Thing");
+			myThing = new Thing(BENCHMARK, sessionId);
 			HashMap<String, Object> thingProperties = new HashMap<String, Object>();
 			thingProperties.put("state", "stopped");
-
+			thingProperties.put(SESSION, sessionId);
 			myThing.setProperties(thingProperties);
 			Run.service.create(myThing);
-			DataSource.dataSources.setProperty(thingName, String.valueOf(myThing.getId()));
+			// update properties file
+			DataSource.dataSources.setProperty(BENCHMARK, String.valueOf(myThing.getId()));
 			DataSource.saveDataSourceProperties();
 		}
 		return myThing;

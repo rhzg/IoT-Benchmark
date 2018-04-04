@@ -120,21 +120,23 @@ public class DataSource implements Runnable {
 			propertiesToBeSaved = true;
 		}
 
-		String thingName = "Benchmark";
-		if (dataSources.getProperty(thingName) != null) {
-			long id = Long.parseLong(dataSources.getProperty(thingName));
-			myThing = service.things().find(id);
-		} 
-		if (myThing == null) {
-			myThing = new Thing(thingName, "Benchmark Random Thing");
-			HashMap<String,Object> thingProperties = new HashMap<String,Object>();
-			thingProperties.put ("state", "stopped");
-			
-			myThing.setProperties(thingProperties);
-			service.create(myThing);
-			dataSources.setProperty(thingName, String.valueOf(myThing.getId()));
-			propertiesToBeSaved = true;
-		}
+		myThing = Controller.getBenchmarkThing();
+//		
+//		String thingName = "Benchmark";
+//		if (dataSources.getProperty(thingName) != null) {
+//			long id = Long.parseLong(dataSources.getProperty(thingName));
+//			myThing = service.things().find(id);
+//		} 
+//		if (myThing == null) {
+//			myThing = new Thing(thingName, "Benchmark Random Thing");
+//			HashMap<String,Object> thingProperties = new HashMap<String,Object>();
+//			thingProperties.put ("state", "stopped");
+//			
+//			myThing.setProperties(thingProperties);
+//			service.create(myThing);
+//			dataSources.setProperty(thingName, String.valueOf(myThing.getId()));
+//			propertiesToBeSaved = true;
+//		}
 		thingId = myThing.getId();
 		
 		String locationName = name+"-Location";
@@ -174,12 +176,12 @@ public class DataSource implements Runnable {
 	public void run() {
 		long startTime = System.currentTimeMillis();
 		Observation o = null;
-		double c;
+		double observateRate;
 		running = true;
 		while (running) {
 			long currentTime = System.currentTimeMillis();
-			c = (double) nbEntries * 1000.0 / ((currentTime > startTime) ? currentTime - startTime : 1);
-			o = new Observation(c, datastream);
+			observateRate = (double) nbEntries * 1000.0 / ((currentTime > startTime) ? currentTime - startTime : 1);
+			o = new Observation(observateRate, datastream);
 			nbEntries++;
 			try {
 				service.create(o);

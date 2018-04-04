@@ -38,7 +38,6 @@ public class Processor extends MqttHelper {
 		topic = "v1.0/Observations";
 
 		try {
-			// Create an instance of the Sample client wrapper
 			broker = Run.props.getProperty(Run.BROKER);
 			if (broker == null) {
 				broker = "localhost";
