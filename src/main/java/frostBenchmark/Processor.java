@@ -31,14 +31,16 @@ public class Processor extends MqttHelper {
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
+		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
+
 		// SensorThings Server settings
-		Run.initializeSerice();
-		Run.initWorkLoad();
+//		Run.initializeSerice();
+//		Run.initWorkLoad();
 
 		topic = "v1.0/Observations";
 
 		try {
-			broker = Run.props.getProperty(Run.BROKER);
+			broker = System.getenv(Run.BROKER);
 			if (broker == null) {
 				broker = "localhost";
 			}
@@ -72,8 +74,8 @@ public class Processor extends MqttHelper {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
 		
-		Object p = msg.get("phenomenonTime");
-		String o = msg.get("@iot.selfLink").toString();
+//		Object p = msg.get("phenomenonTime");
+//		String o = msg.get("@iot.selfLink").toString();
 		String id = msg.get("@iot.id").toString();
 		long longId = Long.parseLong(id);
 
@@ -93,7 +95,7 @@ public class Processor extends MqttHelper {
 			e.printStackTrace();
 		}
 		
-		Observation obs = Run.service.observations().find(longId);
+		Observation obs = BenchData.service.observations().find(longId);
 		
 //		Run.LOGGER.info("Update received, phenomenonTime = " + p.toString() + ", " + o.toString());
 //		Run.LOGGER.info(msg.toString());

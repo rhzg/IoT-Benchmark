@@ -1,8 +1,5 @@
 package frostBenchmark;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -35,48 +32,12 @@ public class Run {
 	private static int workers = 1;
 	private static long postDelay = 0;
 
-	/**
-	 * load properties and initialize SensorThingsSerice endpoint
-	 * 
-	 * @return
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	static void initializeSerice() throws IOException, URISyntaxException {
-		props = new Properties();
-		try {
-			props.load(new FileInputStream("config.properties"));
-			lapTime = Integer.parseInt(props.getProperty(DURATION));
-			workers = Integer.parseInt(props.getProperty(WORKERS));
-			postDelay = Long.parseLong(props.getProperty(POSTDELAY));
-
-		} catch (final FileNotFoundException e) {
-			LOGGER.warn("No properties file found!");
-
-			props.setProperty(BASE_URL, "http://10.1.9.185:8080/FROST-Server/v1.0/");
-			props.setProperty(BROKER, "localhost");
-			props.setProperty(PROXYHOST, "proxy-ka.iosb.fraunhofer.de");
-			props.setProperty(PROXYPORT, "80");
-			props.setProperty(DURATION, "10000");
-			props.setProperty(WORKERS, "1");
-			props.setProperty(POSTDELAY, "10");
-
-			props.store(new FileOutputStream("config.properties"), "FROST Benchmark Properties");
-			LOGGER.warn("New file has been created with default values. Please check your correct settings");
-			LOGGER.warn(props.toString());
-		}
-
-		baseUri = new URL(props.getProperty(BASE_URL));
-		LOGGER.debug("Creating SensorThingsService");
-		service = new SensorThingsService(baseUri);
-		LOGGER.debug("Creating SensorThingsService done");
-	}
 
 	static void initWorkLoad() throws ServiceFailureException, URISyntaxException {
 		LOGGER.trace("Benchmark initializing, starting workers");
 		dsList = new DataSource[workers];
 		for (int i = 0; i < workers; i++) {
-			dsList[i] = new DataSource(service).intialize("Benchmark." + i);
+			dsList[i] = new DataSource(BenchData.service).intialize("Benchmark." + i);
 		}
 		LOGGER.info("Benchmark initialized");
 	}
@@ -106,7 +67,7 @@ public class Run {
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 
-		initializeSerice();
+		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
 
 		initWorkLoad();
 

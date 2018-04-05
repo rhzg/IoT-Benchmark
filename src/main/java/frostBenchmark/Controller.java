@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
-import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
 public class Controller {
 
@@ -21,11 +20,9 @@ public class Controller {
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 		String helpMsg = "Available command are <run [msec]>, <stop>, <help>, <quit>";
 
-		Run.initializeSerice();
-
-		DataSource.loadDataSourceProperties();
-
-		Thing myThing = getBenchmarkThing();
+		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
+		
+		Thing myThing = BenchData.getBenchmarkThing();
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 
@@ -39,7 +36,7 @@ public class Controller {
 			if (cmd[0].equalsIgnoreCase("run")) {
 				properties.put("state", RUNNING);
 				myThing.setProperties(properties);
-				Run.service.update(myThing);
+				BenchData.service.update(myThing);
 
 				if (cmd.length > 1) {
 					int ms = Integer.parseInt(cmd[1]);
@@ -47,14 +44,14 @@ public class Controller {
 					Thread.sleep(ms);
 					properties.put("state", FINISHED);
 					myThing.setProperties(properties);
-					Run.service.update(myThing);
+					BenchData.service.update(myThing);
 				}
 
 			}
 			if (cmd[0].equalsIgnoreCase("stop")) {
 				properties.put("state", FINISHED);
 				myThing.setProperties(properties);
-				Run.service.update(myThing);
+				BenchData.service.update(myThing);
 			}
 			if (cmd[0].equalsIgnoreCase("help")) {
 				System.out.println(helpMsg);
@@ -68,37 +65,4 @@ public class Controller {
 	}
 
 	
-	public static Thing getBenchmarkThing() throws ServiceFailureException {
-		// find the Benchmark Thing to control the load generators
-		Thing myThing = null;
-		String sessionId = System.getenv(SESSION);
-
-		// search for the session thing
-		EntityList<Thing> things = Run.service.things().query().select("name", "id", "description").list();
-		for (Thing thing : things) {
-			Run.LOGGER.trace(thing.toString());
-			if (sessionId.equalsIgnoreCase(thing.getDescription())) { // found it
-				myThing = Run.service.things().find(thing.getId());
-				break;
-			}
-		}
-		
-//		if (DataSource.dataSources.getProperty(thingName) != null) {
-//			long id = Long.parseLong(DataSource.dataSources.getProperty(thingName));
-//			myThing = Run.service.things().find(id);
-//		}
-		if (myThing == null) {
-			myThing = new Thing(BENCHMARK, sessionId);
-			HashMap<String, Object> thingProperties = new HashMap<String, Object>();
-			thingProperties.put("state", "stopped");
-			thingProperties.put(SESSION, sessionId);
-			myThing.setProperties(thingProperties);
-			Run.service.create(myThing);
-			// update properties file
-			DataSource.dataSources.setProperty(BENCHMARK, String.valueOf(myThing.getId()));
-			DataSource.saveDataSourceProperties();
-		}
-		return myThing;
-	}
-
 }

@@ -3,12 +3,12 @@ package frostBenchmark;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.sta.model.Thing;
 
 public class SensorCluster extends MqttHelper {
 
@@ -38,16 +38,18 @@ public class SensorCluster extends MqttHelper {
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
+		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
+		Thing benchmarkThing = BenchData.getBenchmarkThing();
+
 		// SensorThings Server settings
-		Run.initializeSerice();
+		//Run.initializeSerice();
 		Run.initWorkLoad();
 
-		topic = "v1.0/Things(" + DataSource.thingId.toString() + ")/properties";
+		topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
 
 		try {
 			// Create an instance of the Sample client wrapper
 			broker = System.getenv(Run.BROKER);
-//			broker = Run.props.getProperty(Run.BROKER);
 			if (broker == null) {
 				broker = "localhost";
 			}
