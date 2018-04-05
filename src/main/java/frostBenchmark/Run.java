@@ -26,8 +26,8 @@ public class Run {
 	public static Properties props;
 
 	private static DataSource[] dsList;
-	private static long startTime = 1000;
-	private static long stopTime = 1000;
+	private static long startTime = 0;
+	private static long stopTime = 0;
 	private static int lapTime = 1000;
 	private static int workers = 1;
 	private static long postDelay = 0;
@@ -35,6 +35,8 @@ public class Run {
 
 	static void initWorkLoad() throws ServiceFailureException, URISyntaxException {
 		LOGGER.trace("Benchmark initializing, starting workers");
+		workers = Integer.parseInt(System.getenv(WORKERS));
+		postDelay = Integer.parseInt(System.getenv(POSTDELAY));
 		dsList = new DataSource[workers];
 		for (int i = 0; i < workers; i++) {
 			dsList[i] = new DataSource(BenchData.service).intialize("Benchmark." + i);

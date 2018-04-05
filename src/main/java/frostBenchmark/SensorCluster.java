@@ -12,7 +12,6 @@ import de.fraunhofer.iosb.ilt.sta.model.Thing;
 
 public class SensorCluster extends MqttHelper {
 
-
 	public SensorCluster(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
 		// TODO Auto-generated constructor stub
@@ -41,8 +40,6 @@ public class SensorCluster extends MqttHelper {
 		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
-		// SensorThings Server settings
-		//Run.initializeSerice();
 		Run.initWorkLoad();
 
 		topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
@@ -72,7 +69,6 @@ public class SensorCluster extends MqttHelper {
 			th.printStackTrace();
 		}
 	}
-
 
 	@Override
 	/**
