@@ -3,11 +3,10 @@ version: '2'
 services:
   sensorcluster:
     image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
-    volumes:
-      - properties:/usr/local
     environment:
-      - BASE_URL="10.1.9.185:8080/FROST-Server/v1.0/"
+      - BASE_URL="http://10.1.9.185:8080/FROST-Server/v1.0/"
       - BROKER=10.1.9.185
-volumes:
-    properties:
+      - SESSION=0815
+      - WORKERS=10
+      - POSTDELAY=1
       
