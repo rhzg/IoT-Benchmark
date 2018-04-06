@@ -94,6 +94,7 @@ public class SensorCluster extends MqttHelper {
 		} else if (benchState.equalsIgnoreCase(TERMINATE)) {
 			Run.LOGGER.info("Terminate Command received - exit process");
 			state = DISCONNECT;
+			this.waiter.notify();
 		}
 	}
 }
