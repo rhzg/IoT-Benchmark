@@ -12,6 +12,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONObject;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
@@ -31,10 +32,12 @@ public class MqttHelper implements MqttCallback {
 
 	static final String RUNNING = "running";
 	static final String FINISHED = "finished";
+	static final String TERMINATE = "terminate";
 
 
 	// Private instance variables
 	MqttAsyncClient client;
+	MemoryPersistence persistence;
 	String brokerUrl;
 	private MqttConnectOptions conOpt;
 	private boolean clean;
@@ -65,8 +68,11 @@ public class MqttHelper implements MqttCallback {
 			conOpt = new MqttConnectOptions();
 			conOpt.setCleanSession(clean);
 
+			// using in memory persistence 
+			persistence = new MemoryPersistence();
+			
 			// Construct the MqttClient instance
-			client = new MqttAsyncClient(this.brokerUrl, clientId);
+			client = new MqttAsyncClient(this.brokerUrl, clientId, persistence);
 
 			// Set this wrapper as the callback handler
 			client.setCallback(this);
