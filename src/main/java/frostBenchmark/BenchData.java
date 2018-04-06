@@ -21,7 +21,7 @@ import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 
 public class BenchData {
 	static final String BENCHMARK = "Benchmark";
-	static final String SESSION = "session";
+	static final String SESSION = "SESSION";
 	static final String BASE_URL = "BASE_URL";
 	static final String BROKER = "BROKER";
 	static final String PROXYHOST = "proxyhost";
@@ -52,6 +52,7 @@ public class BenchData {
 			System.exit(1);
 		}
 		sessionId = sessionIdToUse;
+		LOGGER.trace("Initialized for: " + baseUriStr + " [SessionId = " + sessionIdToUse + "]");
 	}
 
 	public static Thing getBenchmarkThing() {
