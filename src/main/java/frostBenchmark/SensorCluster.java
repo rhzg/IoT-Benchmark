@@ -81,16 +81,19 @@ public class SensorCluster extends MqttHelper {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
 		JSONObject p = (JSONObject) msg.get("properties");
-		String state = p.getString("state");
+		String benchState = p.getString("state");
 
-		Run.LOGGER.info("Entering " + state + " mode");
+		Run.LOGGER.info("Entering " + benchState + " mode");
 
-		if (state.equalsIgnoreCase(RUNNING)) {
+		if (benchState.equalsIgnoreCase(RUNNING)) {
 			// start the client
 			Run.startWorkLoad();
-		} else if (state.equalsIgnoreCase(FINISHED)) {
+		} else if (benchState.equalsIgnoreCase(FINISHED)) {
 			// get the results
 			Run.stopWorkLoad();
+		} else if (benchState.equalsIgnoreCase(TERMINATE)) {
+			Run.LOGGER.info("Terminate Command received - exit process");
+			state = DISCONNECT;
 		}
 	}
 }

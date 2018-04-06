@@ -15,14 +15,12 @@ import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 
 public class Controller {
 
-	static final String RUNNING = "running";
-	static final String FINISHED = "finished";
 	static final String BENCHMARK = "Benchmark";
 	static final String SESSION = "session";
 
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
-		String helpMsg = "Available command are <run [msec]>, <stop>, <help>, <delete>, <quit>";
+		String cmdInfo = "Available command are <run [msec]>, <stop>, <terminate>, <help>, <delete>, <quit>";
 
 		String baseUrl = System.getenv(BenchData.BASE_URL);
 		String session = System.getenv(BenchData.SESSION);
@@ -32,7 +30,7 @@ public class Controller {
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 
-		System.out.println(helpMsg);
+		System.out.println(cmdInfo);
 		boolean running = true;
 		Scanner sc = new Scanner(System.in);
 		while (running) {
@@ -40,7 +38,7 @@ public class Controller {
 
 			String[] cmd = sc.nextLine().split(" ");
 			if (cmd[0].equalsIgnoreCase("run")) {
-				properties.put("state", RUNNING);
+				properties.put("state", MqttHelper.RUNNING);
 				myThing.setProperties(properties);
 				BenchData.service.update(myThing);
 
@@ -48,13 +46,13 @@ public class Controller {
 					int ms = Integer.parseInt(cmd[1]);
 					System.out.println("running for " + ms + " msec");
 					Thread.sleep(ms);
-					properties.put("state", FINISHED);
+					properties.put("state", MqttHelper.FINISHED);
 					myThing.setProperties(properties);
 					BenchData.service.update(myThing);
 				}
 
 			} else if (cmd[0].equalsIgnoreCase("stop")) {
-				properties.put("state", FINISHED);
+				properties.put("state", MqttHelper.FINISHED);
 				myThing.setProperties(properties);
 				BenchData.service.update(myThing);
 			} else if (cmd[0].equalsIgnoreCase("delete")) {
@@ -69,11 +67,20 @@ public class Controller {
 					System.out.println("fine, we keep the data");					
 				}
 			
-				System.out.println(helpMsg);
+				System.out.println(cmdInfo);
+			} else if (cmd[0].equalsIgnoreCase(MqttHelper.TERMINATE) || cmd[0].equalsIgnoreCase("t")) {
+				properties.put("state", MqttHelper.TERMINATE);
+				myThing.setProperties(properties);
+				BenchData.service.update(myThing);
+				System.out.println("Terminate message sent");
 			} else if (cmd[0].equalsIgnoreCase("help") || cmd[0].equalsIgnoreCase("h")) {
 				System.out.println("Base URL   : " + baseUrl);
 				System.out.println("Session Id : " + session);
-				System.out.println(helpMsg);
+				System.out.println("<run [msec]> : Start all benchmark process with optional parameter time im msec");
+				System.out.println("<stop>       : Stop all running processes");
+				System.out.println("<terminate>  : Terminte all running benchmark processes");
+				System.out.println("<help>       : print this help info");
+				System.out.println("<quit>       : Quit this Controller terminal");
 			} else if (cmd[0].equalsIgnoreCase("quit") || cmd[0].equalsIgnoreCase("q")) {
 				running = false;
 				System.out.println("Bye");
