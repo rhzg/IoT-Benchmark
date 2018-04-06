@@ -62,6 +62,7 @@ public class Controller {
 				if (answer.equalsIgnoreCase("YES")) {
 					System.out.println("ok, let's do it");
 					deleteAll(BenchData.service);
+					System.out.println("finished - you need to restart");
 					System.exit(0);
 				} else {
 					System.out.println("fine, we keep the data");					
