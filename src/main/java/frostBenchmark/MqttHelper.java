@@ -139,12 +139,15 @@ public class MqttHelper implements MqttCallback {
 			case SUBSCRIBED:
 				// Block until Enter is pressed allowing messages to arrive
 				Run.LOGGER.trace("Subscribed");
-				Run.LOGGER.trace("Press <Enter> to exit");
-				try {
-					System.in.read();
-				} catch (IOException e) {
-					// If we can't read we'll just exit
-				}
+				synchronized (this) {
+					wait();
+			     }
+//				Run.LOGGER.trace("Press <Enter> to exit");
+//				try {
+//					System.in.read();
+//				} catch (IOException e) {
+//					// If we can't read we'll just exit
+//				}
 				state = DISCONNECT;
 				donext = true;
 				break;
