@@ -13,41 +13,58 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
+import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
+import de.fraunhofer.iosb.ilt.sta.model.Thing;
+import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
-public class Processor extends MqttHelper {
+public class Processor extends MqttHelper implements Runnable {
+	static int qos = 2;
+	static int port = 1883;
+
+	String dataStreamTopic = null;
 
 	public Processor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
 		// TODO Auto-generated constructor stub
+
+	}
+
+	public void run() {
+		// TODO Auto-generated method stub
+		try {
+			subscribe(dataStreamTopic, qos);
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
-		String topic = null;
-		int qos = 2;
 		String broker;
-		int port = 1883;
 		String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
+		broker = System.getenv(Run.BROKER);
+		if (broker == null) {
+			broker = "localhost";
+		}
+		String url = protocol + broker + ":" + port;
+
 		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
-
-		// SensorThings Server settings
-//		Run.initializeSerice();
-//		Run.initWorkLoad();
-
-		topic = "v1.0/Observations";
+		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		try {
-			broker = System.getenv(Run.BROKER);
-			if (broker == null) {
-				broker = "localhost";
-			}
-			String url = protocol + broker + ":" + port;
-			Processor sensors = new Processor(url, clientId, cleanSession);
+			// create processors for each Datastream
 
-			sensors.subscribe(topic, qos);
+			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
+			for (Datastream dataStream : dataStreams) {
+				Processor processor = new Processor(url, clientId + "-" + dataStream.getId().toString(), cleanSession);
+				processor.dataStreamTopic = "v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations";
+				new Thread(processor).start();
+			}
 
 		} catch (MqttException me) {
 			// Display full details of any exception that occurs
@@ -73,9 +90,9 @@ public class Processor extends MqttHelper {
 			throws MqttException, ServiceFailureException, URISyntaxException {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
-		
-//		Object p = msg.get("phenomenonTime");
-//		String o = msg.get("@iot.selfLink").toString();
+
+		// Object p = msg.get("phenomenonTime");
+		// String o = msg.get("@iot.selfLink").toString();
 		String id = msg.get("@iot.id").toString();
 		long longId = Long.parseLong(id);
 
@@ -94,17 +111,19 @@ public class Processor extends MqttHelper {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		Observation obs = BenchData.service.observations().find(longId);
-		
-//		Run.LOGGER.info("Update received, phenomenonTime = " + p.toString() + ", " + o.toString());
-//		Run.LOGGER.info(msg.toString());
+
+		// Run.LOGGER.info("Update received, phenomenonTime = " + p.toString() + ", " +
+		// o.toString());
+		// Run.LOGGER.info(msg.toString());
 		System.out.print('.');
 
 		processObservation(obs);
 	}
-	
-	private void processObservation (Observation obs) {
+
+	private void processObservation(Observation obs) {
 
 	}
+
 }
