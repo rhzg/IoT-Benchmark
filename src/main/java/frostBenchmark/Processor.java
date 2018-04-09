@@ -18,11 +18,10 @@ import de.fraunhofer.iosb.ilt.sta.model.Observation;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
-public class Processor extends MqttHelper implements Runnable {
+public class Processor extends MqttHelper  {
 	static int qos = 2;
 	static int port = 1883;
 
-	String dataStreamTopic = null;
 
 	public Processor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
@@ -30,16 +29,7 @@ public class Processor extends MqttHelper implements Runnable {
 
 	}
 
-	public void run() {
-		// TODO Auto-generated method stub
-		try {
-			subscribe(dataStreamTopic, qos);
-		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
-	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
 		String broker;
@@ -58,13 +48,18 @@ public class Processor extends MqttHelper implements Runnable {
 
 		try {
 			// create processors for each Datastream
-
 			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
 			for (Datastream dataStream : dataStreams) {
-				Processor processor = new Processor(url, clientId + "-" + dataStream.getId().toString(), cleanSession);
+				ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(), cleanSession);
 				processor.dataStreamTopic = "v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations";
 				new Thread(processor).start();
 			}
+			
+			// subscribe for benchmark commands
+			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
+			Processor processor = new Processor (url, clientId, cleanSession);
+			processor.subscribe(topic, qos);
+
 
 		} catch (MqttException me) {
 			// Display full details of any exception that occurs
@@ -90,40 +85,22 @@ public class Processor extends MqttHelper implements Runnable {
 			throws MqttException, ServiceFailureException, URISyntaxException {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
+		JSONObject p = (JSONObject) msg.get("properties");
+		String benchState = p.getString("state");
 
-		// Object p = msg.get("phenomenonTime");
-		// String o = msg.get("@iot.selfLink").toString();
-		String id = msg.get("@iot.id").toString();
-		long longId = Long.parseLong(id);
+		Run.LOGGER.info("Entering " + benchState + " mode");
 
-		final ObjectMapper mapper = ObjectMapperFactory.get();
-		Observation entity;
-		try {
-			entity = mapper.readValue(message.getPayload(), Observation.class);
-			entity.setService(Run.service);
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (benchState.equalsIgnoreCase(RUNNING)) {
+			// start the client
+		} else if (benchState.equalsIgnoreCase(FINISHED)) {
+			// get the results
+		} else if (benchState.equalsIgnoreCase(TERMINATE)) {
+			Run.LOGGER.info("Terminate Command received - exit process");
+			state = DISCONNECT;
+			this.waiter.notify();
+			Run.LOGGER.info("Terminate");
 		}
-
-		Observation obs = BenchData.service.observations().find(longId);
-
-		// Run.LOGGER.info("Update received, phenomenonTime = " + p.toString() + ", " +
-		// o.toString());
-		// Run.LOGGER.info(msg.toString());
-		System.out.print('.');
-
-		processObservation(obs);
 	}
 
-	private void processObservation(Observation obs) {
-
-	}
 
 }
