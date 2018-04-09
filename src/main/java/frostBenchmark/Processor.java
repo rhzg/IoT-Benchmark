@@ -7,14 +7,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
-import de.fraunhofer.iosb.ilt.sta.model.Observation;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
@@ -64,10 +58,10 @@ public class Processor extends MqttHelper  {
 		} catch (MqttException me) {
 			// Display full details of any exception that occurs
 			Run.LOGGER.error("reason " + me.getReasonCode());
-			Run.LOGGER.error("msg " + me.getMessage());
-			Run.LOGGER.error("loc " + me.getLocalizedMessage());
-			Run.LOGGER.error("cause " + me.getCause());
-			Run.LOGGER.error("excep " + me);
+			Run.LOGGER.error("msg    " + me.getMessage());
+			Run.LOGGER.error("loc    " + me.getLocalizedMessage());
+			Run.LOGGER.error("cause  " + me.getCause());
+			Run.LOGGER.error("excep  " + me);
 			me.printStackTrace();
 		} catch (Throwable th) {
 			Run.LOGGER.error("Throwable caught " + th);
