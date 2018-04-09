@@ -12,18 +12,13 @@ import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
-public class Processor extends MqttHelper  {
+public class Processor extends MqttHelper {
 	static int qos = 2;
 	static int port = 1883;
 
-
 	public Processor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
-		// TODO Auto-generated constructor stub
-
 	}
-
-
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
 		String broker;
@@ -44,16 +39,16 @@ public class Processor extends MqttHelper  {
 			// create processors for each Datastream
 			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
 			for (Datastream dataStream : dataStreams) {
-				ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(), cleanSession);
+				ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
+						cleanSession);
 				processor.dataStreamTopic = "v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations";
 				new Thread(processor).start();
 			}
-			
+
 			// subscribe for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
-			Processor processor = new Processor (url, clientId, cleanSession);
+			Processor processor = new Processor(url, clientId, cleanSession);
 			processor.subscribe(topic, qos);
-
 
 		} catch (MqttException me) {
 			// Display full details of any exception that occurs
@@ -95,6 +90,5 @@ public class Processor extends MqttHelper  {
 			Run.LOGGER.info("Terminate");
 		}
 	}
-
 
 }
