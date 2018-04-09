@@ -80,6 +80,7 @@ public class Controller {
 				System.out.println("<run [msec]> : Start all benchmark process with optional parameter time im msec");
 				System.out.println("<stop>       : Stop all running processes");
 				System.out.println("<terminate>  : Terminte all running benchmark processes");
+				System.out.println("<delete>     : Deletes all data in base url - THING TWICE BEFORE USING THIS!!!");
 				System.out.println("<help>       : print this help info");
 				System.out.println("<quit>       : Quit this Controller terminal");
 			} else if (cmd[0].equalsIgnoreCase("quit") || cmd[0].equalsIgnoreCase("q")) {

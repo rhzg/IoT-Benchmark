@@ -1,6 +1,5 @@
 package frostBenchmark;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
