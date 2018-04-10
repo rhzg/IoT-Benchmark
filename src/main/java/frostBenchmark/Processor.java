@@ -17,6 +17,9 @@ import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 public class Processor extends MqttHelper {
 	static int qos = 2;
 	static int port = 1883;
+	
+	private static long startTime = 0;
+
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Processor.class);
 
@@ -95,8 +98,13 @@ public class Processor extends MqttHelper {
 
 		if (benchState.equalsIgnoreCase(RUNNING)) {
 			// start the client
+			startTime = System.currentTimeMillis();
+			ProcessorWorker.setNotificationsReceived(0);
 		} else if (benchState.equalsIgnoreCase(FINISHED)) {
 			// get the results
+			long endTime = System.currentTimeMillis();
+			LOGGER.info(ProcessorWorker.getNotificationsReceived() + " Notifications received");
+			LOGGER.info((1000 * ProcessorWorker.getNotificationsReceived()) / (endTime-startTime) + " notifications per sec");
 		} else if (benchState.equalsIgnoreCase(TERMINATE)) {
 			LOGGER.info("Terminate Command received - exit process");
 			state = DISCONNECT;

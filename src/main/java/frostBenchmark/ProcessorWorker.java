@@ -17,10 +17,12 @@ import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
 
 public class ProcessorWorker extends MqttHelper implements Runnable {
-	
+
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ProcessorWorker.class);
 
 	String dataStreamTopic = null;
+
+	static private long notificationsReceived = 0;
 
 	public ProcessorWorker(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
@@ -39,7 +41,7 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 		}
 
 	}
-	
+
 	@Override
 	/**
 	 * @throws URISyntaxException
@@ -75,8 +77,19 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 	}
 
 	private void processObservation(Observation obs) {
-		System.out.print('.');
+		incNotificationsReceived();
+	}
 
+	public static synchronized long getNotificationsReceived() {
+		return notificationsReceived;
+	}
+
+	public static synchronized void setNotificationsReceived(long notificationsReceived) {
+		ProcessorWorker.notificationsReceived = notificationsReceived;
+	}
+
+	public static synchronized void incNotificationsReceived() {
+		notificationsReceived++;
 	}
 
 }
