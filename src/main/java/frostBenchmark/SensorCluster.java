@@ -37,7 +37,7 @@ public class SensorCluster extends MqttHelper {
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
-		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
+		BenchData.initialize();
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		Run.initWorkLoad();

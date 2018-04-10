@@ -22,9 +22,7 @@ public class Controller {
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 		String cmdInfo = "Available command are <run [msec]>, <stop>, <terminate>, <help>, <delete>, <quit>";
 
-		String baseUrl = System.getenv(BenchData.BASE_URL);
-		String session = System.getenv(BenchData.SESSION);
-		BenchData.initialize(baseUrl, session);
+		BenchData.initialize();
 		
 		Thing myThing = BenchData.getBenchmarkThing();
 
@@ -56,7 +54,7 @@ public class Controller {
 				myThing.setProperties(properties);
 				BenchData.service.update(myThing);
 			} else if (cmd[0].equalsIgnoreCase("delete")) {
-				System.out.println("All data in " + baseUrl + " will be deleted. After that you need to restart");
+				System.out.println("All data in " + BenchData.baseUri.toString() + " will be deleted. After that you need to restart");
 				System.out.println("Are you sure you want to do this? Type 'yes'");
 				String answer = sc.nextLine();
 				if (answer.equalsIgnoreCase("YES")) {
@@ -75,8 +73,8 @@ public class Controller {
 				BenchData.service.update(myThing);
 				System.out.println("Terminate message sent");
 			} else if (cmd[0].equalsIgnoreCase("help") || cmd[0].equalsIgnoreCase("h")) {
-				System.out.println("Base URL   : " + baseUrl);
-				System.out.println("Session Id : " + session);
+				System.out.println("Base URL   : " + BenchData.baseUri.toString());
+				System.out.println("Session Id : " + BenchData.sessionId);
 				System.out.println("<run [msec]> : Start all benchmark process with optional parameter time im msec");
 				System.out.println("<stop>       : Stop all running processes");
 				System.out.println("<terminate>  : Terminte all running benchmark processes");

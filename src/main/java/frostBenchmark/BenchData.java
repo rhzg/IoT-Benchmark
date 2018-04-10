@@ -36,7 +36,10 @@ public class BenchData {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BenchData.class);
 
-	public static void initialize(String baseUriStr, String sessionIdToUse) {
+	public static void initialize() {
+		String baseUriStr = System.getenv(BenchData.BASE_URL).trim();
+		sessionId = System.getenv(BenchData.SESSION).trim();
+		
 		try {
 			LOGGER.debug("Creating SensorThingsService");
 			baseUri = new URL(baseUriStr);
@@ -51,8 +54,7 @@ public class BenchData {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		sessionId = sessionIdToUse;
-		LOGGER.trace("Initialized for: " + baseUriStr + " [SessionId = " + sessionIdToUse + "]");
+		LOGGER.trace("Initialized for: " + baseUriStr + " [SessionId = " + sessionId + "]");
 	}
 
 	public static Thing getBenchmarkThing() {

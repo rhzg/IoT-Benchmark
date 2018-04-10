@@ -32,7 +32,7 @@ public class Processor extends MqttHelper {
 		}
 		String url = protocol + broker + ":" + port;
 
-		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
+		BenchData.initialize();
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		try {

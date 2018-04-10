@@ -35,8 +35,8 @@ public class Run {
 
 	static void initWorkLoad() throws ServiceFailureException, URISyntaxException {
 		LOGGER.trace("Benchmark initializing, starting workers");
-		workers = Integer.parseInt(System.getenv(WORKERS));
-		postDelay = Integer.parseInt(System.getenv(POSTDELAY));
+		workers = Integer.parseInt(System.getenv(WORKERS).trim());
+		postDelay = Integer.parseInt(System.getenv(POSTDELAY).trim());
 		dsList = new DataSource[workers];
 		for (int i = 0; i < workers; i++) {
 			dsList[i] = new DataSource(BenchData.service).intialize("Benchmark." + i);
@@ -69,7 +69,7 @@ public class Run {
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 
-		BenchData.initialize(System.getenv(BenchData.BASE_URL), System.getenv(BenchData.SESSION));
+		BenchData.initialize();
 
 		initWorkLoad();
 
