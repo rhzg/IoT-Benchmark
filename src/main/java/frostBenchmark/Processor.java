@@ -17,7 +17,7 @@ import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 public class Processor extends MqttHelper {
 	static int qos = 2;
 	static int port = 1883;
-	
+
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Processor.class);
 
 	static final String COVERAGE = "COVERAGE";
@@ -56,7 +56,8 @@ public class Processor extends MqttHelper {
 					nbProcessors++;
 				}
 			}
-			LOGGER.trace (nbProcessors + " created out of " + dataStreams.size() + " Datastreams");
+			LOGGER.trace(nbProcessors + " created out of " + dataStreams.size() + " Datastreams (coverage="
+					+ 100 * nbProcessors / dataStreams.size() + "[" + coverage + "]");
 
 			// subscribe for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
