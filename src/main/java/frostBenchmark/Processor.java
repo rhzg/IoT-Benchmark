@@ -59,7 +59,7 @@ public class Processor extends MqttHelper {
 					nbProcessors++;
 				}
 			}
-			LOGGER.trace(nbProcessors + " created out of " + dataStreams.size() + " Datastreams (coverage="
+			LOGGER.info(nbProcessors + " created out of " + dataStreams.size() + " Datastreams (coverage="
 					+ 100 * nbProcessors / dataStreams.size() + "[" + coverage + "]");
 
 			// subscribe for benchmark commands
@@ -94,10 +94,11 @@ public class Processor extends MqttHelper {
 		JSONObject p = (JSONObject) msg.get("properties");
 		String benchState = p.getString("state");
 
-		LOGGER.info("Entering " + benchState + " mode");
+		LOGGER.trace("Entering " + benchState + " mode");
 
 		if (benchState.equalsIgnoreCase(RUNNING)) {
 			// start the client
+			LOGGER.info("Starting Processor Test");
 			startTime = System.currentTimeMillis();
 			ProcessorWorker.setNotificationsReceived(0);
 		} else if (benchState.equalsIgnoreCase(FINISHED)) {

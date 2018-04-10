@@ -41,7 +41,7 @@ public class Run {
 		for (int i = 0; i < workers; i++) {
 			dsList[i] = new DataSource(BenchData.service).intialize("Benchmark." + i);
 		}
-		LOGGER.info("Benchmark initialized");
+		LOGGER.trace("Benchmark initialized");
 	}
 
 	static void startWorkLoad() {
@@ -50,7 +50,7 @@ public class Run {
 			dsList[i].startUp(postDelay);
 		}
 		startTime = System.currentTimeMillis();
-		LOGGER.info("Benchmark workload started");
+		LOGGER.trace("Benchmark workload started");
 	}
 
 	static void stopWorkLoad() {
@@ -64,6 +64,14 @@ public class Run {
 		LOGGER.info(1000 * entries / (stopTime - startTime) + " entries created per sec");
 		LOGGER.info("Benchmark finished");
 
+	}
+	
+	public static int getWorkers () {
+		return workers;
+	}
+	
+	public static long getPostDelay () {
+		return postDelay;
 	}
 
 	public static void main(String[] args)

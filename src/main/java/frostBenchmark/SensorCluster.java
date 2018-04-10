@@ -45,6 +45,8 @@ public class SensorCluster extends MqttHelper {
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		Run.initWorkLoad();
+		
+		LOGGER.info("Starting " + Run.getWorkers() + " Sensor Data Generators with " + Run.getPostDelay() + " msec post delay");
 
 		topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
 

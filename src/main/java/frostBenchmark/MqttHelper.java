@@ -237,11 +237,11 @@ public class MqttHelper implements MqttCallback {
 			// Connect to the server
 			// Get a token and setup an asynchronous listener on the token which
 			// will be notified once the connect completes
-			LOGGER.info("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
+			LOGGER.trace("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
 
 			IMqttActionListener conListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					LOGGER.info("Connected");
+					LOGGER.trace("Connected");
 					state = CONNECTED;
 					carryOn();
 				}
@@ -329,7 +329,7 @@ public class MqttHelper implements MqttCallback {
 
 			IMqttActionListener discListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					LOGGER.info("Disconnect Completed");
+					LOGGER.trace("Disconnect Completed");
 					state = DISCONNECTED;
 					carryOn();
 				}
