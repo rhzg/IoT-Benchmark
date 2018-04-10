@@ -13,10 +13,14 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 
 public class MqttHelper implements MqttCallback {
+	
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MqttHelper.class);
+
 
 	int state = BEGIN;
 
@@ -78,7 +82,7 @@ public class MqttHelper implements MqttCallback {
 
 		} catch (MqttException e) {
 			e.printStackTrace();
-			Run.LOGGER.trace("Unable to set up client: " + e.toString());
+			LOGGER.trace("Unable to set up client: " + e.toString());
 			System.exit(1);
 		}
 	}
@@ -96,7 +100,7 @@ public class MqttHelper implements MqttCallback {
 				try {
 					waiter.wait(maxTTW);
 				} catch (InterruptedException e) {
-					Run.LOGGER.trace("timed out");
+					LOGGER.trace("timed out");
 					e.printStackTrace();
 				}
 
@@ -137,11 +141,11 @@ public class MqttHelper implements MqttCallback {
 				break;
 			case SUBSCRIBED:
 				// Block until Enter is pressed allowing messages to arrive
-				Run.LOGGER.trace("Subscribed");
+				LOGGER.trace("Subscribed");
 				synchronized (this) {
 					wait();
 			     }
-//				Run.LOGGER.trace("Press <Enter> to exit");
+//				LOGGER.trace("Press <Enter> to exit");
 //				try {
 //					System.in.read();
 //				} catch (IOException e) {
@@ -179,7 +183,7 @@ public class MqttHelper implements MqttCallback {
 		// Called when the connection to the server has been lost.
 		// An application may choose to implement reconnection
 		// logic at this point. This sample simply exits.
-		Run.LOGGER.error("Connection to " + brokerUrl + " lost!" + cause);
+		LOGGER.error("Connection to " + brokerUrl + " lost!" + cause);
 		System.exit(1);
 	}
 
@@ -201,7 +205,7 @@ public class MqttHelper implements MqttCallback {
 		//
 		// note that token.getTopics() returns an array so we convert to a string
 		// before printing it on the console
-		Run.LOGGER.trace("Delivery complete callback: Publish Completed " + Arrays.toString(token.getTopics()));
+		LOGGER.trace("Delivery complete callback: Publish Completed " + Arrays.toString(token.getTopics()));
 	}
 
 	/**
@@ -213,7 +217,7 @@ public class MqttHelper implements MqttCallback {
 			throws MqttException, ServiceFailureException, URISyntaxException {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
-		Run.LOGGER.trace ("Message Arrived: " + msg.toString());
+		LOGGER.trace ("Message Arrived: " + msg.toString());
 	}
 
 	/****************************************************************/
@@ -233,11 +237,11 @@ public class MqttHelper implements MqttCallback {
 			// Connect to the server
 			// Get a token and setup an asynchronous listener on the token which
 			// will be notified once the connect completes
-			Run.LOGGER.info("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
+			LOGGER.info("Connecting to " + brokerUrl + " with client ID " + client.getClientId());
 
 			IMqttActionListener conListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					Run.LOGGER.info("Connected");
+					LOGGER.info("Connected");
 					state = CONNECTED;
 					carryOn();
 				}
@@ -245,7 +249,7 @@ public class MqttHelper implements MqttCallback {
 				public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 					ex = exception;
 					state = ERROR;
-					Run.LOGGER.error("connect failed" + exception);
+					LOGGER.error("connect failed" + exception);
 					carryOn();
 				}
 
@@ -280,11 +284,11 @@ public class MqttHelper implements MqttCallback {
 			// Make a subscription
 			// Get a token and setup an asynchronous listener on the token which
 			// will be notified once the subscription is in place.
-			Run.LOGGER.trace("Subscribing to topic \"" + topicName + "\" qos " + qos);
+			LOGGER.trace("Subscribing to topic \"" + topicName + "\" qos " + qos);
 
 			IMqttActionListener subListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					Run.LOGGER.trace("Subscribe Completed");
+					LOGGER.trace("Subscribe Completed");
 					state = SUBSCRIBED;
 					carryOn();
 				}
@@ -292,7 +296,7 @@ public class MqttHelper implements MqttCallback {
 				public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 					ex = exception;
 					state = ERROR;
-					Run.LOGGER.trace("Subscribe failed" + exception);
+					LOGGER.trace("Subscribe failed" + exception);
 					carryOn();
 				}
 
@@ -321,11 +325,11 @@ public class MqttHelper implements MqttCallback {
 	public class Disconnector {
 		public void doDisconnect() {
 			// Disconnect the client
-			Run.LOGGER.trace("Disconnecting");
+			LOGGER.trace("Disconnecting");
 
 			IMqttActionListener discListener = new IMqttActionListener() {
 				public void onSuccess(IMqttToken asyncActionToken) {
-					Run.LOGGER.info("Disconnect Completed");
+					LOGGER.info("Disconnect Completed");
 					state = DISCONNECTED;
 					carryOn();
 				}
@@ -333,7 +337,7 @@ public class MqttHelper implements MqttCallback {
 				public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 					ex = exception;
 					state = ERROR;
-					Run.LOGGER.error("Disconnect failed" + exception);
+					LOGGER.error("Disconnect failed" + exception);
 					carryOn();
 				}
 

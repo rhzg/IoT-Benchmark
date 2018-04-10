@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -16,6 +17,8 @@ import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
 
 public class ProcessorWorker extends MqttHelper implements Runnable {
+	
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ProcessorWorker.class);
 
 	String dataStreamTopic = null;
 
@@ -31,7 +34,8 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 			subscribe(dataStreamTopic, Processor.qos);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error(e.toString());
+			System.exit(1);
 		}
 
 	}

@@ -6,11 +6,15 @@ import java.net.URISyntaxException;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 
 public class SensorCluster extends MqttHelper {
+
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SensorCluster.class);
+
 
 	public SensorCluster(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
@@ -50,7 +54,7 @@ public class SensorCluster extends MqttHelper {
 			if (broker == null) {
 				broker = "localhost";
 			}
-			Run.LOGGER.trace("using mqtt broker: " + broker);
+			LOGGER.trace("using mqtt broker: " + broker);
 			String url = protocol + broker + ":" + port;
 			SensorCluster sensors = new SensorCluster(url, clientId, cleanSession);
 
@@ -58,14 +62,14 @@ public class SensorCluster extends MqttHelper {
 
 		} catch (MqttException me) {
 			// Display full details of any exception that occurs
-			Run.LOGGER.error("reason " + me.getReasonCode());
-			Run.LOGGER.error("msg " + me.getMessage());
-			Run.LOGGER.error("loc " + me.getLocalizedMessage());
-			Run.LOGGER.error("cause " + me.getCause());
-			Run.LOGGER.error("excep " + me);
+			LOGGER.error("reason " + me.getReasonCode());
+			LOGGER.error("msg " + me.getMessage());
+			LOGGER.error("loc " + me.getLocalizedMessage());
+			LOGGER.error("cause " + me.getCause());
+			LOGGER.error("excep " + me);
 			me.printStackTrace();
 		} catch (Throwable th) {
-			Run.LOGGER.error("Throwable caught " + th);
+			LOGGER.error("Throwable caught " + th);
 			th.printStackTrace();
 		}
 	}
@@ -83,7 +87,7 @@ public class SensorCluster extends MqttHelper {
 		JSONObject p = (JSONObject) msg.get("properties");
 		String benchState = p.getString("state");
 
-		Run.LOGGER.info("Entering " + benchState + " mode");
+		LOGGER.info("Entering " + benchState + " mode");
 
 		if (benchState.equalsIgnoreCase(RUNNING)) {
 			// start the client
@@ -92,7 +96,7 @@ public class SensorCluster extends MqttHelper {
 			// get the results
 			Run.stopWorkLoad();
 		} else if (benchState.equalsIgnoreCase(TERMINATE)) {
-			Run.LOGGER.info("Terminate Command received - exit process");
+			LOGGER.info("Terminate Command received - exit process");
 			state = DISCONNECT;
 			this.waiter.notify();
 		}

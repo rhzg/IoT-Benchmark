@@ -2,6 +2,8 @@ package frostBenchmark;
 
 import java.net.URISyntaxException;
 
+import org.slf4j.LoggerFactory;
+
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Id;
@@ -10,6 +12,9 @@ import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 
 
 public class DataSource implements Runnable {
+	
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DataSource.class);
+
 	private SensorThingsService service;
 	private String myName;
 	private int nbEntries = 0;
@@ -68,7 +73,7 @@ public class DataSource implements Runnable {
 
 	public int endUp() {
 		running = false;
-		Run.LOGGER.debug(myName + " created " + nbEntries + " entries");
+		LOGGER.debug(myName + " created " + nbEntries + " entries");
 		return nbEntries;
 	}
 

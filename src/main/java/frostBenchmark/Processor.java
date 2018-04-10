@@ -2,10 +2,12 @@ package frostBenchmark;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Random;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
@@ -15,6 +17,10 @@ import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 public class Processor extends MqttHelper {
 	static int qos = 2;
 	static int port = 1883;
+	
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Processor.class);
+
+	static final String COVERAGE = "COVERAGE";
 
 	public Processor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
@@ -36,14 +42,21 @@ public class Processor extends MqttHelper {
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		try {
-			// create processors for each Datastream
+			// create processors for Datastream according to coverage
+			int coverage = Integer.parseInt(System.getenv(COVERAGE).trim());
+			Random random = new Random();
+			int nbProcessors = 0;
 			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
 			for (Datastream dataStream : dataStreams) {
-				ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
-						cleanSession);
-				processor.dataStreamTopic = "v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations";
-				new Thread(processor).start();
+				if (random.nextInt(100) < coverage) {
+					ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
+							cleanSession);
+					processor.dataStreamTopic = "v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations";
+					new Thread(processor).start();
+					nbProcessors++;
+				}
 			}
+			LOGGER.trace (nbProcessors + " created out of " + dataStreams.size() + " Datastreams");
 
 			// subscribe for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
@@ -52,14 +65,14 @@ public class Processor extends MqttHelper {
 
 		} catch (MqttException me) {
 			// Display full details of any exception that occurs
-			Run.LOGGER.error("reason " + me.getReasonCode());
-			Run.LOGGER.error("msg    " + me.getMessage());
-			Run.LOGGER.error("loc    " + me.getLocalizedMessage());
-			Run.LOGGER.error("cause  " + me.getCause());
-			Run.LOGGER.error("excep  " + me);
+			LOGGER.error("reason " + me.getReasonCode());
+			LOGGER.error("msg    " + me.getMessage());
+			LOGGER.error("loc    " + me.getLocalizedMessage());
+			LOGGER.error("cause  " + me.getCause());
+			LOGGER.error("excep  " + me);
 			me.printStackTrace();
 		} catch (Throwable th) {
-			Run.LOGGER.error("Throwable caught " + th);
+			LOGGER.error("Throwable caught " + th);
 			th.printStackTrace();
 		}
 	}
@@ -77,17 +90,17 @@ public class Processor extends MqttHelper {
 		JSONObject p = (JSONObject) msg.get("properties");
 		String benchState = p.getString("state");
 
-		Run.LOGGER.info("Entering " + benchState + " mode");
+		LOGGER.info("Entering " + benchState + " mode");
 
 		if (benchState.equalsIgnoreCase(RUNNING)) {
 			// start the client
 		} else if (benchState.equalsIgnoreCase(FINISHED)) {
 			// get the results
 		} else if (benchState.equalsIgnoreCase(TERMINATE)) {
-			Run.LOGGER.info("Terminate Command received - exit process");
+			LOGGER.info("Terminate Command received - exit process");
 			state = DISCONNECT;
 			this.waiter.notify();
-			Run.LOGGER.info("Terminate");
+			LOGGER.info("Terminate");
 		}
 	}
 

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.slf4j.LoggerFactory;
+
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.dao.BaseDao;
 import de.fraunhofer.iosb.ilt.sta.model.Entity;
@@ -14,6 +16,8 @@ import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 
 public class Controller {
+	
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
 	static final String BENCHMARK = "Benchmark";
 	static final String SESSION = "session";
