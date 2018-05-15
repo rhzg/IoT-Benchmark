@@ -71,6 +71,14 @@ public class Controller {
 				}
 			
 				System.out.println(cmdInfo);
+			} else if (cmd[0].equalsIgnoreCase("script") || cmd[0].equalsIgnoreCase("s")) {
+				if (cmd.length > 1) {
+					System.out.println("running script " + cmd[1]);
+					Scheduler scriptScheduler = new Scheduler();
+					scriptScheduler.readSchedule(cmd[1]);
+					scriptScheduler.runScript();
+				}
+				
 			} else if (cmd[0].equalsIgnoreCase(MqttHelper.TERMINATE) || cmd[0].equalsIgnoreCase("t")) {
 				properties.put("state", MqttHelper.TERMINATE);
 				myThing.setProperties(properties);
