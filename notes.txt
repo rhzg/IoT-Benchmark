@@ -15,3 +15,7 @@ Scale up:
 docker-compose up --scale sensorcluster=2
 docker-compose up --scale sensorcluster=10 --scale subscriberCluster=5
 
+
+
+mvn dockerfile:build -pl StreamProcessor,SubscriberCluster,SensorCluster
+
