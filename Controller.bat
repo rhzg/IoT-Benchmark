@@ -18,4 +18,4 @@ REM msec delay between observations
 set POSTDELAY=1
 
 
-java -cp .\BenchmarkController\target\BenchmarkController-0.0.1-jar-with-dependencies.jar frostBenchmark.Controller
+java -cp .\BenchmarkController\target\BenchmarkController-0.0.1-SNAPSHOT-jar-with-dependencies.jar frostBenchmark.Controller
