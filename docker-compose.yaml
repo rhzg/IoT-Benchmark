@@ -1,24 +1,33 @@
 version: '2'
 
 services:
-  web:
-    image: fraunhoferiosb/frost-server:latest
-    volumes:
-      - conf_volume:/usr/local/tomcat/conf/Catalina/localhost
-    ports:
-      - 8080:8080
-      - 1883:1883
-    depends_on:
-      - database
-
-  database:
-    image: mdillon/postgis:latest
+  sensorcluster:
+    image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
     environment:
-      - POSTGRES_DB=sensorthings
-      - POSTGRES_USER=sensorthings
-      - POSTGRES_PASSWORD=ChangeMe
-    volumes:
-      - postgis_volume:/var/lib/postgresql/data
-volumes:
-    postgis_volume:
-    conf_volume:
+      - BASE_URL=http://10.1.9.185:8080/FROST-Server/v1.0/
+      - BROKER=10.1.9.185
+      - SESSION=0815
+      - WORKERS=10
+      - POSTDELAY=1
+
+  subscriberCluster:
+    image: fraunhoferiosb/subsribercluster:0.0.1-SNAPSHOT
+    environment:
+      - BASE_URL=http://10.1.9.185:8080/FROST-Server/v1.0/
+      - BROKER=10.1.9.185
+      - SESSION=0815
+      - WORKERS=10
+      - POSTDELAY=1
+      - COVERAGE=50
+      
+
+  streamProcessor:
+    image: fraunhoferiosb/streamprocessor:0.0.1-SNAPSHOT
+    environment:
+      - BASE_URL=http://10.1.9.185:8080/FROST-Server/v1.0/
+      - BROKER=10.1.9.185
+      - SESSION=0815
+      - WORKERS=10
+      - POSTDELAY=1
+      - COVERAGE=50
+      

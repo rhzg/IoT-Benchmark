@@ -11,21 +11,22 @@ import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
+import de.fraunhofer.iosb.ilt.sta.model.Observation;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
-public class Processor extends MqttHelper {
+public class StreamProcessor extends MqttHelper {
 	static int qos = 2;
 	static int port = 1883;
 	
 	private static long startTime = 0;
 
 
-	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Processor.class);
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StreamProcessor.class);
 
 	static final String COVERAGE = "COVERAGE";
 
-	public Processor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
+	public StreamProcessor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
 	}
 
@@ -35,7 +36,7 @@ public class Processor extends MqttHelper {
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
-		broker = System.getenv(Run.BROKER);
+		broker = System.getenv(MqttHelper.BROKER);
 		if (broker == null) {
 			broker = "localhost";
 		}
@@ -54,7 +55,7 @@ public class Processor extends MqttHelper {
 				if (random.nextInt(100) < coverage) {
 					ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
 							cleanSession);
-					processor.dataStreamTopic = "v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations";
+					processor.setDataStreamTopic("v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations");
 					new Thread(processor).start();
 					nbProcessors++;
 				}
@@ -64,7 +65,7 @@ public class Processor extends MqttHelper {
 
 			// subscribe for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
-			Processor processor = new Processor(url, clientId, cleanSession);
+			StreamProcessor processor = new StreamProcessor(url, clientId, cleanSession);
 			processor.subscribe(topic, qos);
 
 		} catch (MqttException me) {
@@ -104,6 +105,16 @@ public class Processor extends MqttHelper {
 		} else if (benchState.equalsIgnoreCase(FINISHED)) {
 			// get the results
 			long endTime = System.currentTimeMillis();
+			
+			Datastream ds = BenchData.getDatastream("SubsriberCluster");
+			double rate = (1000 * ProcessorWorker.getNotificationsReceived()) / (endTime-startTime);
+			try {
+				BenchData.service.create(new Observation(rate, ds));
+			} catch (ServiceFailureException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 			LOGGER.info(ProcessorWorker.getNotificationsReceived() + " Notifications received");
 			LOGGER.info((1000 * ProcessorWorker.getNotificationsReceived()) / (endTime-startTime) + " notifications per sec");
 		} else if (benchState.equalsIgnoreCase(TERMINATE)) {

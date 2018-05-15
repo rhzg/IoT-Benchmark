@@ -37,6 +37,8 @@ public class MqttHelper implements MqttCallback {
 	static final String FINISHED = "finished";
 	static final String TERMINATE = "terminate";
 
+	static final String BROKER = "BROKER";
+
 
 	// Private instance variables
 	MqttAsyncClient client;

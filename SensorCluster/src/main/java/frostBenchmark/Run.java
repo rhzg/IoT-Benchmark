@@ -8,7 +8,8 @@ import java.util.Properties;
 import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
+import de.fraunhofer.iosb.ilt.sta.model.Datastream;
+import de.fraunhofer.iosb.ilt.sta.model.Observation;
 
 public class Run {
 
@@ -21,7 +22,6 @@ public class Run {
 	static final String POSTDELAY = "POSTDELAY";
 
 	static URL baseUri;
-	static SensorThingsService service;
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Run.class);
 	public static Properties props;
 
@@ -61,6 +61,15 @@ public class Run {
 			entries += dsList[i].endUp();
 		}
 
+		Datastream ds = BenchData.getDatastream("SensorCluster");
+		double rate = 1000.0 * entries / (stopTime - startTime);
+		try {
+			BenchData.service.create(new Observation(rate, ds));
+		} catch (ServiceFailureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		LOGGER.info(1000 * entries / (stopTime - startTime) + " entries created per sec");
 		LOGGER.info("Benchmark finished");
 

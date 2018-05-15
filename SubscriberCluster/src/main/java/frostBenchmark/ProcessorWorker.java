@@ -33,7 +33,7 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		try {
-			subscribe(dataStreamTopic, Processor.qos);
+			subscribe(dataStreamTopic, SubscriberCluster.qos);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			LOGGER.error(e.toString());
@@ -51,16 +51,11 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 	public void messageArrived(String topic, MqttMessage message)
 			throws MqttException, ServiceFailureException, URISyntaxException {
 
-		JSONObject msg = new JSONObject(new String(message.getPayload()));
-
-		String id = msg.get("@iot.id").toString();
-		long longId = Long.parseLong(id);
-
 		final ObjectMapper mapper = ObjectMapperFactory.get();
 		Observation entity;
 		try {
 			entity = mapper.readValue(message.getPayload(), Observation.class);
-			entity.setService(Run.service);
+			processObservation(entity);
 		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -71,9 +66,6 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		Observation obs = BenchData.service.observations().find(longId);
-		processObservation(obs);
 	}
 
 	private void processObservation(Observation obs) {

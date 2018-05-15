@@ -17,4 +17,4 @@ set WORKERS=10
 REM msec delay between observations
 set POSTDELAY=1
 
-java -cp .\SubscriberCluster\target\SubscriberCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar frostBenchmark.Processor
+java -cp .\SubscriberCluster\target\SubscriberCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar frostBenchmark.SubscriberCluster

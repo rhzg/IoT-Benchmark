@@ -1,11 +1,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>fraunhofer.iosb.FROST.benchmark</groupId>
-	<artifactId>frostBenchmark</artifactId>
+	<groupId>de.fraunhofer.iosb.FROST-Benchmark</groupId>
+	<artifactId>FROST-BenchmarkParent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>FROST Benchmark Tools</name>
-	<description>Collection of tools to benchmark a FROST server installation</description>
+	<packaging>pom</packaging>
+	<name>FROST-Benchmark</name>
+	<description>Collection of Benchmark modules</description>
+	<modules>
+		<module>BenchmarkData</module>
+		<module>BenchmarkController</module>
+		<module>SensorCluster</module>
+		<module>SubscriberCluster</module>
+		<module>StreamProcessor</module>
+		<module>MqttHelper</module>
+	</modules>
 
 	<repositories>
 		<repository>
@@ -23,74 +32,49 @@
 	<build>
 		<plugins>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
 				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>fully.qualified.MainClass</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
 				<executions>
 					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
+						<id>attach-sources</id>
+						<phase>verify</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>jar-no-fork</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
-
-
-<!--  			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>dockerfile-maven-plugin</artifactId>
-				<version>1.3.7</version>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.4</version>
 				<executions>
 					<execution>
-						<id>default</id>
+						<id>attach-javadocs</id>
 						<goals>
-							<goal>build</goal>
-							<goal>push</goal>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>
 				<configuration>
-					<repository>fraunhoferiosb/sensorcluster</repository>
-					<tag>${project.version}</tag>
-					<buildArgs>
-						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-					</buildArgs>
+					<excludePackageNames>de.fraunhofer.iosb.ilt.sta.parser.path:de.fraunhofer.iosb.ilt.sta.parser.query</excludePackageNames>
 				</configuration>
 			</plugin>
- -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+			</plugin>
 		</plugins>
 	</build>
-
-	<dependencies>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.paho</groupId>
-			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-			<version>1.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>de.fraunhofer.iosb.ilt</groupId>
-			<artifactId>FROST-Client</artifactId>
-			<version>0.15</version>
-		</dependency>
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20171018</version>
-		</dependency>
-	</dependencies>
 </project>

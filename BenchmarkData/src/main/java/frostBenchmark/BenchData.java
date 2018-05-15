@@ -58,7 +58,7 @@ public class BenchData {
 	}
 
 	public static Thing getBenchmarkThing() {
-		// if sessionThing allready found, just return it;
+		// if sessionThing already found, just return it;
 		if (sessionThing != null) {
 			return sessionThing;
 		}
@@ -109,8 +109,7 @@ public class BenchData {
 	 */
 	public static Datastream getDatastream(String name) {
 		Datastream dataStream = null;
-		String dataStreamName = name + "-Datastream";
-		LOGGER.debug("getSensor: " + dataStreamName);
+		LOGGER.debug("getSensor: " + name);
 
 		try {
 			dataStream = sessionThing.datastreams().query().filter("name eq '" + name + "'").first();
@@ -151,7 +150,7 @@ public class BenchData {
 		service.create(location);
 
 		dataStream = new Datastream(name, "Benchmark Random Stream", name,
-				new UnitOfMeasurement("observation rate", "observation per sec", "ucum:T"));
+				new UnitOfMeasurement("observation rate", "observations per sec", "ucum:T"));
 		dataStream.setThing(sessionThing);
 		dataStream.setSensor(sensor);
 		dataStream.setObservedProperty(obsProp1);
