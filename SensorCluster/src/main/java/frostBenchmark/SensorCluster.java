@@ -35,7 +35,6 @@ public class SensorCluster extends MqttHelper {
 
 		String topic = null;
 		int qos = 2;
-		String broker;
 		int port = 1883;
 		String clientId = "BechmarkSensorCluster-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
@@ -46,18 +45,14 @@ public class SensorCluster extends MqttHelper {
 
 		Run.initWorkLoad();
 		
-		LOGGER.info("Starting " + Run.getWorkers() + " Sensor Data Generators with " + Run.getPostDelay() + " msec post delay");
+		LOGGER.info("Starting " + BenchProperties.workers + " Sensor Data Generators with " + BenchProperties.postdelay + " msec post delay");
 
 		topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
 
 		try {
 			// Create an instance of the Sample client wrapper
-			broker = System.getenv(Run.BROKER);
-			if (broker == null) {
-				broker = "localhost";
-			}
-			LOGGER.trace("using mqtt broker: " + broker);
-			String url = protocol + broker + ":" + port;
+			LOGGER.trace("using mqtt broker: " + BenchData.broker);
+			String url = protocol + BenchData.broker + ":" + port;
 			SensorCluster sensors = new SensorCluster(url, clientId, cleanSession);
 
 			sensors.subscribe(topic, qos);

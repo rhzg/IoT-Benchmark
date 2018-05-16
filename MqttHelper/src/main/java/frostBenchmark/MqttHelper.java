@@ -33,6 +33,7 @@ public class MqttHelper implements MqttCallback {
 	static final int ERROR = 6;
 	static final int DISCONNECT = 7;
 
+	static final String STATUS = "state";
 	static final String RUNNING = "running";
 	static final String FINISHED = "finished";
 	static final String TERMINATE = "terminate";

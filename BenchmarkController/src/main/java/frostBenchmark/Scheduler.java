@@ -3,7 +3,6 @@ package frostBenchmark;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -22,11 +21,6 @@ public class Scheduler {
 			fr = new FileReader(scheduleFile);
 			JSONParser parser = new JSONParser();			
 			script = (JSONObject) parser.parse(fr);
-			
-			JSONObject o = (JSONObject) script.get("initialize");
-			String s = o.get("broker").toString();
-			int broker = Integer.parseInt(s);
-			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,11 +46,8 @@ public class Scheduler {
 			Long seqId= (Long) run.get("seq");
 			System.out.println("run experiment " + seqId + " for " + duration + " msec");
 			JSONObject runProperties = (JSONObject) run.get("properties");
-			JSONObject combinedProperties = properties;
-			for (Iterator p = runProperties.keySet().iterator(); p.hasNext();) {
-				String key = (String) p.next();
-				combinedProperties.put(key,runProperties.get(key));
-			}
+			JSONObject combinedProperties = BenchProperties.mergeProperties(properties, runProperties);
+			
 			System.out.println(combinedProperties.toString());
 		}
 	}

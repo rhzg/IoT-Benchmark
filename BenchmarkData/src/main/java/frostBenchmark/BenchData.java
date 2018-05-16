@@ -26,19 +26,25 @@ public class BenchData {
 	static final String BROKER = "BROKER";
 	static final String PROXYHOST = "proxyhost";
 	static final String PROXYPORT = "proxyport";
-	static final String WORKERS = "WORKERS";
-	static final String POSTDELAY = "POSTDELAY";
 
 	static URL baseUri = null;
 	static SensorThingsService service = null;
 	static String sessionId;
+	static String broker;
+
 	static Thing sessionThing = null;
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BenchData.class);
 
 	public static void initialize() {
+		BenchProperties.intialize();
 		String baseUriStr = System.getenv(BenchData.BASE_URL).trim();
+		
 		sessionId = System.getenv(BenchData.SESSION).trim();
+		
+		broker = System.getenv(BROKER).trim();
+		if (broker == null) broker = "localhost";
+
 		
 		try {
 			LOGGER.debug("Creating SensorThingsService");

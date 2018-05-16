@@ -3,7 +3,6 @@ package frostBenchmark;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Properties;
 
 import org.slf4j.LoggerFactory;
 
@@ -13,32 +12,21 @@ import de.fraunhofer.iosb.ilt.sta.model.Observation;
 
 public class Run {
 
-	static final String BASE_URL = "BASE_URL";
-	static final String BROKER = "BROKER";
-	static final String PROXYHOST = "proxyhost";
-	static final String PROXYPORT = "proxyport";
-	static final String DURATION = "DURATION";
-	static final String WORKERS = "WORKERS";
-	static final String POSTDELAY = "POSTDELAY";
 
 	static URL baseUri;
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Run.class);
-	public static Properties props;
 
 	private static DataSource[] dsList;
 	private static long startTime = 0;
 	private static long stopTime = 0;
 	private static int lapTime = 1000;
-	private static int workers = 1;
-	private static long postDelay = 0;
 
 
 	static void initWorkLoad() throws ServiceFailureException, URISyntaxException {
 		LOGGER.trace("Benchmark initializing, starting workers");
-		workers = Integer.parseInt(System.getenv(WORKERS).trim());
-		postDelay = Integer.parseInt(System.getenv(POSTDELAY).trim());
-		dsList = new DataSource[workers];
-		for (int i = 0; i < workers; i++) {
+		BenchData.initialize();
+		dsList = new DataSource[BenchProperties.workers];
+		for (int i = 0; i < BenchProperties.workers; i++) {
 			dsList[i] = new DataSource(BenchData.service).intialize("Benchmark." + i);
 		}
 		LOGGER.trace("Benchmark initialized");
@@ -46,8 +34,8 @@ public class Run {
 
 	static void startWorkLoad() {
 		LOGGER.trace("Benchmark start workload");
-		for (int i = 0; i < workers; i++) {
-			dsList[i].startUp(postDelay);
+		for (int i = 0; i < BenchProperties.workers; i++) {
+			dsList[i].startUp(BenchProperties.postdelay);
 		}
 		startTime = System.currentTimeMillis();
 		LOGGER.trace("Benchmark workload started");
@@ -57,7 +45,7 @@ public class Run {
 		LOGGER.trace("Benchmark finishing");
 		stopTime = System.currentTimeMillis();
 		int entries = 0;
-		for (int i = 0; i < workers; i++) {
+		for (int i = 0; i < BenchProperties.workers; i++) {
 			entries += dsList[i].endUp();
 		}
 
@@ -75,14 +63,6 @@ public class Run {
 
 	}
 	
-	public static int getWorkers () {
-		return workers;
-	}
-	
-	public static long getPostDelay () {
-		return postDelay;
-	}
-
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 

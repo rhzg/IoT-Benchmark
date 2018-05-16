@@ -16,43 +16,32 @@ import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 
 public class StreamProcessor extends MqttHelper {
+	private static long startTime = 0;
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StreamProcessor.class);
 	static int qos = 2;
 	static int port = 1883;
-	
-	private static long startTime = 0;
 
-
-	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StreamProcessor.class);
-
-	static final String COVERAGE = "COVERAGE";
 
 	public StreamProcessor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
 	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
-		String broker;
 		String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
-		broker = System.getenv(MqttHelper.BROKER);
-		if (broker == null) {
-			broker = "localhost";
-		}
-		String url = protocol + broker + ":" + port;
-
 		BenchData.initialize();
+		String url = protocol + BenchData.broker + ":" + port;
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		try {
 			// create processors for Datastream according to coverage
-			int coverage = Integer.parseInt(System.getenv(COVERAGE).trim());
 			Random random = new Random();
 			int nbProcessors = 0;
 			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
 			for (Datastream dataStream : dataStreams) {
-				if (random.nextInt(100) < coverage) {
+				if (random.nextInt(100) < BenchProperties.coverage) {
 					ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
 							cleanSession);
 					processor.setDataStreamTopic("v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations");
@@ -61,7 +50,7 @@ public class StreamProcessor extends MqttHelper {
 				}
 			}
 			LOGGER.info(nbProcessors + " created out of " + dataStreams.size() + " Datastreams (coverage="
-					+ 100 * nbProcessors / dataStreams.size() + "[" + coverage + "]");
+					+ 100 * nbProcessors / dataStreams.size() + "[" + BenchProperties.coverage + "]");
 
 			// subscribe for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
