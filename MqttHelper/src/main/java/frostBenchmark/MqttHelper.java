@@ -131,7 +131,7 @@ public class MqttHelper implements MqttCallback {
 		// Use a state machine to decide which step to do next. State change occurs
 		// when a notification is received that an MQTT action has completed
 		while (state != STATE.FINISH) {
-			LOGGER.info("Handling state: {}", state);
+			LOGGER.debug("Handling state: {}", state);
 			switch (state) {
 				case BEGIN:
 					// Connect using a non-blocking connect
@@ -363,6 +363,7 @@ public class MqttHelper implements MqttCallback {
 			} catch (MqttException ex) {
 				LOGGER.error("Exception closing connection.", ex);
 			}
+			System.exit(0);
 		}
 	}
 }

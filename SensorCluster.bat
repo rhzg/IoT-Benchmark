@@ -12,9 +12,11 @@ REM Percentage of Datastreams covered by mqtt subsribers
 set COVERAGE=50
 
 REM number of parallel Sensors data providers
-set WORKERS=20
+set WORKERS=5
 
 REM msec delay between observations
-set POSTDELAY=10
+set PERIOD=500
+
+set SENSORS=10
 
 java -cp .\SensorCluster\target\SensorCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar frostBenchmark.SensorCluster

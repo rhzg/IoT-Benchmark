@@ -8,7 +8,8 @@ services:
       - BROKER=10.1.9.185
       - SESSION=0815
       - WORKERS=10
-      - POSTDELAY=1
+      - SENSORS=10
+      - PERIOD=100
 
   subscriberCluster:
     image: fraunhoferiosb/subsribercluster:0.0.1-SNAPSHOT
@@ -16,8 +17,6 @@ services:
       - BASE_URL=http://10.1.9.185:8080/FROST-Server/v1.0/
       - BROKER=10.1.9.185
       - SESSION=0815
-      - WORKERS=10
-      - POSTDELAY=1
       - COVERAGE=50
       
 
@@ -27,7 +26,5 @@ services:
       - BASE_URL=http://10.1.9.185:8080/FROST-Server/v1.0/
       - BROKER=10.1.9.185
       - SESSION=0815
-      - WORKERS=10
-      - POSTDELAY=1
       - COVERAGE=50
       

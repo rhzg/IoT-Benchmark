@@ -98,7 +98,11 @@ public class BenchProperties {
 			period = getEnv(TAG_PERIOD, DFLT_PERIOD);
 			properties.put(TAG_PERIOD, period);
 
+			sensors = getEnv(TAG_SENSORS, DFLT_SENSORS);
+			properties.put(TAG_SENSORS, sensors);
+			
 			properties.put(TAG_STATUS, STATUS.FINISHED);
+			
 		}
 
 	}
