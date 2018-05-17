@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>de.fraunhofer.iosb.FROST-Benchmark</groupId>
@@ -7,6 +7,13 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>StreamProcessor</artifactId>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<mainClass>frostBenchmark.StreamProcessor</mainClass>
+		<docker-image-name>fraunhoferiosb/streamprocessor</docker-image-name>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -14,7 +21,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>fully.qualified.MainClass</mainClass>
+							<mainClass>${mainClass}</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -46,7 +53,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<repository>fraunhoferiosb/streamprocessor</repository>
+					<repository>${docker-image-name}</repository>
 					<tag>${project.version}</tag>
 					<buildArgs>
 						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>

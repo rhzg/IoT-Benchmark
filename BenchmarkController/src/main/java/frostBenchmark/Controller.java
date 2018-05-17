@@ -1,19 +1,16 @@
 package frostBenchmark;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-
-import org.slf4j.LoggerFactory;
-
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.dao.BaseDao;
 import de.fraunhofer.iosb.ilt.sta.model.Entity;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Scanner;
+import org.slf4j.LoggerFactory;
 
 public class Controller {
 
@@ -22,8 +19,7 @@ public class Controller {
 	static final String BENCHMARK = "Benchmark";
 	static final String SESSION = "session";
 
-	public static void main(String[] args)
-			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
+	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 		String cmdInfo = "Available command are <run [msec]>, <stop>, <terminate>, <help>, <delete>, <quit>";
 
 		BenchData.initialize();
@@ -40,23 +36,23 @@ public class Controller {
 
 			String[] cmd = sc.nextLine().split(" ");
 			if (cmd[0].equalsIgnoreCase("run")) {
-				properties.put("state", MqttHelper.RUNNING);
+				properties.put("state", BenchProperties.STATUS.RUNNING);
 				myThing.setProperties(properties);
 				BenchData.service.update(myThing);
 				if (cmd.length > 1) {
 					int ms = Integer.parseInt(cmd[1]);
 					System.out.println("running for " + ms + " msec");
 					Thread.sleep(ms);
-					properties.put("state", MqttHelper.FINISHED);
+					properties.put("state", BenchProperties.STATUS.FINISHED);
 					myThing.setProperties(properties);
 					BenchData.service.update(myThing);
 				}
 
 			} else if (cmd[0].equalsIgnoreCase("stop")) {
-				properties.put("state", MqttHelper.FINISHED);
+				properties.put("state", BenchProperties.STATUS.FINISHED);
 				myThing.setProperties(properties);
 				BenchData.service.update(myThing);
-				
+
 			} else if (cmd[0].equalsIgnoreCase("delete")) {
 				System.out.println("All data in " + BenchData.baseUri.toString()
 						+ " will be deleted. After that you need to restart");
@@ -71,7 +67,7 @@ public class Controller {
 					System.out.println("fine, we keep the data");
 				}
 				System.out.println(cmdInfo);
-				
+
 			} else if (cmd[0].equalsIgnoreCase("script") || cmd[0].equalsIgnoreCase("s")) {
 				if (cmd.length > 1) {
 					System.out.println("running script " + cmd[1]);
@@ -82,12 +78,12 @@ public class Controller {
 					System.out.println("missing script name");
 				}
 
-			} else if (cmd[0].equalsIgnoreCase(MqttHelper.TERMINATE) || cmd[0].equalsIgnoreCase("t")) {
-				properties.put("state", MqttHelper.TERMINATE);
+			} else if (cmd[0].equalsIgnoreCase("terminate") || cmd[0].equalsIgnoreCase("t")) {
+				properties.put("state", BenchProperties.STATUS.TERMINATE);
 				myThing.setProperties(properties);
 				BenchData.service.update(myThing);
 				System.out.println("Terminate message sent");
-				
+
 			} else if (cmd[0].equalsIgnoreCase("help") || cmd[0].equalsIgnoreCase("h")) {
 				System.out.println("Base URL     : " + BenchData.baseUri.toString());
 				System.out.println("Session Id   : " + BenchData.sessionId);

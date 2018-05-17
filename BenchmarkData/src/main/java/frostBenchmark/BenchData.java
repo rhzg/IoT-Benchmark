@@ -1,14 +1,5 @@
 package frostBenchmark;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.HashMap;
-
-import org.geojson.Point;
-import org.slf4j.LoggerFactory;
-
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Location;
@@ -18,8 +9,17 @@ import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import de.fraunhofer.iosb.ilt.sta.model.ext.UnitOfMeasurement;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import org.geojson.Point;
+import org.slf4j.LoggerFactory;
 
 public class BenchData {
+
 	static final String BENCHMARK = "Benchmark";
 	static final String SESSION = "SESSION";
 	static final String BASE_URL = "BASE_URL";
@@ -38,29 +38,48 @@ public class BenchData {
 
 	public static void initialize() {
 		BenchProperties.intialize();
-		String baseUriStr = System.getenv(BenchData.BASE_URL).trim();
-		
-		sessionId = System.getenv(BenchData.SESSION).trim();
-		
-		broker = System.getenv(BROKER).trim();
-		if (broker == null) broker = "localhost";
+		String baseUriStr = getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
 
-		
+		sessionId = getEnv(BenchData.SESSION, "0815").trim();
+
+		broker = getEnv(BROKER, "localhost").trim();
+		if (broker == null) {
+			broker = "localhost";
+		}
+
 		try {
 			LOGGER.debug("Creating SensorThingsService");
 			baseUri = new URL(baseUriStr);
 			service = new SensorThingsService(baseUri);
 			LOGGER.debug("Creating SensorThingsService done");
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(1);
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (MalformedURLException | URISyntaxException e) {
+			LOGGER.error("Incorrect url: {}", baseUriStr);
+			LOGGER.error("Exception:", e);
 			System.exit(1);
 		}
-		LOGGER.trace("Initialized for: " + baseUriStr + " [SessionId = " + sessionId + "]");
+		LOGGER.trace("Initialized for: {} [SessionId = {}]", baseUriStr, sessionId);
+	}
+
+	public static String getEnv(String name, String deflt) {
+		String value = System.getenv(name);
+		if (value == null) {
+			return deflt;
+		}
+		return value;
+	}
+
+	public static int getEnv(String name, int deflt) {
+		String value = System.getenv(name);
+		if (value == null) {
+			return deflt;
+		}
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException ex) {
+			LOGGER.trace("Failed to parse parameter to int.", ex);
+			LOGGER.info("Value for {} ({}) was not an Integer", name, value);
+			return deflt;
+		}
 	}
 
 	public static Thing getBenchmarkThing() {
@@ -91,15 +110,14 @@ public class BenchData {
 			}
 			if (myThing == null) {
 				myThing = new Thing(BENCHMARK, sessionId);
-				HashMap<String, Object> thingProperties = new HashMap<String, Object>();
+				Map<String, Object> thingProperties = new HashMap<>();
 				thingProperties.put("state", "stopped");
 				thingProperties.put(SESSION, sessionId);
 				myThing.setProperties(thingProperties);
 				service.create(myThing);
 			}
 		} catch (ServiceFailureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Exception:", e);
 			System.exit(1);
 		}
 
@@ -108,47 +126,47 @@ public class BenchData {
 	}
 
 	/**
-	 * Find a Datastream with given name @param within the Thing as defined in the initialized session context. 
-	 * 
+	 * Find a Datastream with given name @param within the Thing as defined in
+	 * the initialized session context.
+	 *
 	 * @param name
 	 * @return
 	 */
 	public static Datastream getDatastream(String name) {
-		Datastream dataStream = null;
+		Datastream dataStream;
 		LOGGER.debug("getSensor: " + name);
 
 		try {
-			dataStream = sessionThing.datastreams().query().filter("name eq '" + name + "'").first();
+			dataStream = getBenchmarkThing().datastreams().query().filter("name eq '" + name + "'").first();
 
 			if (dataStream == null) {
 				dataStream = createDatastream(name);
 			}
-		} catch (ServiceFailureException e) {
-			e.printStackTrace();
-			System.exit(1);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			return dataStream;
+		} catch (ServiceFailureException | URISyntaxException e) {
+			LOGGER.error("Exception!", e);
 			System.exit(1);
 		}
-
-		return dataStream;
+		return null;
 	}
 
 	/**
-	 * Creates a new Datastream with the given name along with associated Sensors and Locations 
+	 * Creates a new Datastream with the given name along with associated
+	 * Sensors and Locations
+	 *
 	 * @param name
 	 * @return
-	 * @throws ServiceFailureException 
-	 * @throws URISyntaxException 
+	 * @throws ServiceFailureException
+	 * @throws URISyntaxException
 	 */
 	private static Datastream createDatastream(String name) throws ServiceFailureException, URISyntaxException {
 		Datastream dataStream = null;
-		
+
 		Sensor sensor = new Sensor(name, "Sensor for creating benchmark data", "text", "Some metadata.");
 		service.create(sensor);
 		LOGGER.debug("Sensor new id " + String.valueOf(sensor.getId()));
 
-		ObservedProperty obsProp1 = new ObservedProperty(name, new URI("http://ucom.org/temperature"), "random temperature");
+		ObservedProperty obsProp1 = new ObservedProperty(name, new URI("http://ucom.org/temperature"), "observation rate");
 		service.create(obsProp1);
 
 		Location location = new Location(name, "Benchmark Random Location", "application/vnd.geo+json", new Point(8, 52));
@@ -156,12 +174,11 @@ public class BenchData {
 		service.create(location);
 
 		dataStream = new Datastream(name, "Benchmark Random Stream", name,
-				new UnitOfMeasurement("observation rate", "observations per sec", "ucum:T"));
+				new UnitOfMeasurement("observation rate", "observations per sec", ""));
 		dataStream.setThing(sessionThing);
 		dataStream.setSensor(sensor);
 		dataStream.setObservedProperty(obsProp1);
 		service.create(dataStream);
-		
 
 		return dataStream;
 	}

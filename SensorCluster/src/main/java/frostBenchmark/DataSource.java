@@ -1,14 +1,12 @@
 package frostBenchmark;
 
-import java.net.URISyntaxException;
-
-import org.slf4j.LoggerFactory;
-
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
-import de.fraunhofer.iosb.ilt.sta.model.Id;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
+import java.net.URISyntaxException;
+import java.util.concurrent.ScheduledFuture;
+import org.slf4j.LoggerFactory;
 
 public class DataSource implements Runnable {
 
@@ -16,27 +14,26 @@ public class DataSource implements Runnable {
 
 	private SensorThingsService service;
 	private String myName;
-	private int nbEntries = 0;
-	private boolean running = false;
-	private long POSTDELAY = 1000;
+	private int createdObsCount = 0;
+	private long startTime;
+	private long lastTime;
 
 	private Datastream datastream;
 
 	public Thread myThread = null;
+	private ScheduledFuture<?> schedulerHandle;
 
 	public DataSource(SensorThingsService sensorThingsService) {
 		service = sensorThingsService;
 	}
 
-	public static Id thingId = null;
-
 	/**
 	 * find or create the datastream for given name
-	 * 
-	 * @param name
-	 * @return
-	 * @throws ServiceFailureException
-	 * @throws URISyntaxException
+	 *
+	 * @param name The name
+	 * @return this
+	 * @throws ServiceFailureException if something goes wrong
+	 * @throws URISyntaxException if something goes wrong
 	 */
 	public DataSource intialize(String name) throws ServiceFailureException, URISyntaxException {
 		myName = name + Thread.currentThread().getName();
@@ -44,56 +41,50 @@ public class DataSource implements Runnable {
 		return this;
 	}
 
-	public void _run() {
-		long startTime = System.currentTimeMillis();
-		Observation o = null;
-		double observateRate;
-		running = true;
-		while (running) {
-			long currentTime = System.currentTimeMillis();
-			observateRate = (double) nbEntries * 1000.0 / ((currentTime > startTime) ? currentTime - startTime : 1);
-			o = new Observation(observateRate, datastream);
-			nbEntries++;
-			try {
-				service.create(o);
-			} catch (ServiceFailureException e1) {
-				e1.printStackTrace();
-			}
-			try {
-				Thread.sleep(POSTDELAY);
-			} catch (InterruptedException e) {
-				running = false;
-				e.printStackTrace();
-			}
-		}
+	private double calculateRate() {
+		return (double) createdObsCount * 1000.0 / ((lastTime > startTime) ? lastTime - startTime : 1);
 	}
 
+	@Override
 	public void run() {
-		long startTime = System.currentTimeMillis();
-		Observation o = null;
-		double observateRate;
-		long currentTime = System.currentTimeMillis();
-		observateRate = (double) nbEntries * 1000.0 / ((currentTime > startTime) ? currentTime - startTime : 1);
-		o = new Observation(observateRate, datastream);
-		nbEntries++;
+		if (startTime == 0) {
+			startTime = System.currentTimeMillis();
+		}
+		lastTime = System.currentTimeMillis();
+		double observateRate = calculateRate();
+		Observation o = new Observation(observateRate, datastream);
+		createdObsCount++;
 		try {
 			service.create(o);
-		} catch (ServiceFailureException e1) {
-			e1.printStackTrace();
+		} catch (ServiceFailureException exc) {
+			LOGGER.error("Failed to create observation.", exc);
 		}
 	}
 
-	public int endUp() {
-		running = false;
-		LOGGER.debug(myName + " created " + nbEntries + " entries");
-		return nbEntries;
+	public int reset() {
+		double observateRate = calculateRate();
+		LOGGER.info("{} created {} entries at a rate of {}/s", myName, createdObsCount, String.format("%.2f", observateRate));
+		startTime = 0;
+		int obsCount = createdObsCount;
+		createdObsCount = 0;
+		return obsCount;
 	}
 
-	public DataSource startUp(long delay) {
-		POSTDELAY = delay;
-		nbEntries = 0;
-		(myThread = new Thread(this)).start();
-		return this;
+	public void cancel() {
+		this.schedulerHandle.cancel(false);
+		this.schedulerHandle = null;
+	}
+
+	public ScheduledFuture<?> getSchedulerHandle() {
+		return schedulerHandle;
+	}
+
+	public void setSchedulerHandle(ScheduledFuture<?> schedulerHandle) {
+		if (this.schedulerHandle != null) {
+			LOGGER.warn("Sensor is scheduled twice without cancelling first!");
+			this.cancel();
+		}
+		this.schedulerHandle = schedulerHandle;
 	}
 
 }

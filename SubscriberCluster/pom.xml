@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>de.fraunhofer.iosb.FROST-Benchmark</groupId>
@@ -7,6 +7,13 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>SubscriberCluster</artifactId>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<mainClass>frostBenchmark.SubscriberCluster</mainClass>
+		<docker-image-name>fraunhoferiosb/subsribercluster</docker-image-name>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -14,7 +21,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>fully.qualified.MainClass</mainClass>
+							<mainClass>${mainClass}</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -36,7 +43,7 @@
 				<groupId>com.spotify</groupId>
 				<artifactId>dockerfile-maven-plugin</artifactId>
 				<version>1.3.7</version>
-                <executions>
+				<executions>
 					<execution>
 						<id>default</id>
 						<goals>
@@ -44,9 +51,9 @@
 							<goal>push</goal>
 						</goals>
 					</execution>
-                </executions>
+				</executions>
 				<configuration>
-					<repository>fraunhoferiosb/subsribercluster</repository>
+					<repository>${docker-image-name}</repository>
 					<tag>${project.version}</tag>
 					<buildArgs>
 						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>

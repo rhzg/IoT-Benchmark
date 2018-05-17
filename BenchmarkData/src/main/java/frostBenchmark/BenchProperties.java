@@ -3,86 +3,102 @@ package frostBenchmark;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BenchProperties {
-	static final String BENCHMARK = "Benchmark";
-	static final String SESSION = "SESSION";
-	static final String BASE_URL = "BASE_URL";
-	static final String PROXYHOST = "proxyhost";
-	static final String PROXYPORT = "proxyport";
 
-	static final String TIMEOUT = "timeout";
-	static final String TIMEOUTdefault = "10000";
-	static       int    timeout = 10000;
+	public static final String TAG_BENCHMARK = "Benchmark";
+	public static final String TAG_SESSION = "SESSION";
+	public static final String TAG_BASE_URL = "BASE_URL";
+	public static final String TAG_PROXYHOST = "proxyhost";
+	public static final String TAG_PROXYPORT = "proxyport";
 
-	static final String POSTDELAY = "POSTDELAY";
-	static final String POSTDELAYdefault = "1000";
-	static       int    postdelay = 1000;
+	public static final String TAG_TIMEOUT = "timeout";
+	public static final int DFLT_TIMEOUT = 10000;
+	public static int timeout = 10000;
 
-	static final String COVERAGE = "COVERAGE";
-	static final String COVERAGEdefault = "100";
-	static       int    coverage = 100;
+	public static final String TAG_POSTDELAY = "POSTDELAY";
+	public static final int DFLT_POSTDELAY = 1000;
+	public static int postdelay = 1000;
 
-	static final String PERIOD = "PERIOD";
-	static final String PERIODdefault = "10";
-	static       int    period = 100;
+	public static final String TAG_COVERAGE = "COVERAGE";
+	public static final int DFLT_COVERAGE = 100;
+	public static int coverage = 100;
 
-	static final String WORKERS = "WORKERS";
-	static final String WORKERSdefault = "1";
-	static       int    workers = 1;
+	public static final String TAG_PERIOD = "PERIOD";
+	public static final int DFLT_PERIOD = 100;
+	public static int period = DFLT_PERIOD;
 
-	static final String STATUS = "status";
-	static final String RUNNING = "running";
-	static final String FINISHED = "finished";
-	static final String TERMINATE = "terminate";
+	public static final String TAG_SENSORS = "SENSORS";
+	public static final int DFLT_SENSORS = 100;
+	public static int sensors = DFLT_SENSORS;
 
+	public static final String TAG_WORKERS = "WORKERS";
+	public static final int DFLT_WORKERS = 10;
+	public static int workers = DFLT_PERIOD;
+
+	public static final String TAG_STATUS = "state";
+
+	public static enum STATUS {
+		RUNNING,
+		FINISHED,
+		TERMINATE;
+	}
+	/**
+	 * The logger for this class.
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(BenchProperties.class);
 	static private Map<String, Object> properties = null;
 
 	public static Map<String, Object> getProperties() {
 		return properties;
 	}
-	
+
 	public static void setProperties(Map<String, Object> properties) {
 		BenchProperties.properties = properties;
 	}
 
+	public static String getEnv(String name, String deflt) {
+		String value = System.getenv(name);
+		if (value == null) {
+			return deflt;
+		}
+		return value;
+	}
+
+	public static int getEnv(String name, int deflt) {
+		String value = System.getenv(name);
+		if (value == null) {
+			return deflt;
+		}
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException ex) {
+			LOGGER.trace("Failed to parse parameter to int.", ex);
+			LOGGER.info("Value for {} ({}) was not an Integer", name, value);
+			return deflt;
+		}
+	}
+
 	static public void intialize() {
 		if (properties == null) {
-			properties = new HashMap<String, Object>();
-			
-			String workersStr = System.getenv(WORKERS);
-			if (workersStr == null)
-				workersStr = WORKERSdefault;
-			properties.put(WORKERS, workersStr);
-			workers = Integer.parseInt(workersStr);
+			properties = new HashMap<>();
 
-			String coverageStr = System.getenv(COVERAGE);
-			if (coverageStr == null)
-				coverageStr = COVERAGEdefault;
-			properties.put(COVERAGE, coverageStr);
-			coverage = Integer.parseInt(coverageStr);
+			workers = getEnv(TAG_WORKERS, DFLT_WORKERS);
+			properties.put(TAG_WORKERS, workers);
 
-			String rateStr = System.getenv(PERIOD);
-			if (rateStr == null)
-				rateStr = PERIODdefault;
-			properties.put(PERIOD, rateStr);
-			period = Integer.parseInt(rateStr);
+			coverage = getEnv(TAG_COVERAGE, DFLT_COVERAGE);
+			properties.put(TAG_COVERAGE, coverage);
 
-			String postdelayStr = System.getenv(POSTDELAY);
-			if (postdelayStr == null)
-				postdelayStr = POSTDELAYdefault;
-			properties.put(POSTDELAY, postdelayStr);
-			postdelay = Integer.parseInt(postdelayStr);
+			postdelay = getEnv(TAG_POSTDELAY, DFLT_POSTDELAY);
+			properties.put(TAG_COVERAGE, postdelay);
 
-			String timeoutStr = System.getenv(TIMEOUT);
-			if (timeoutStr == null)
-				timeoutStr = TIMEOUTdefault;
-			properties.put(TIMEOUT, timeoutStr);
-			timeout = Integer.parseInt(timeoutStr);
+			period = getEnv(TAG_PERIOD, DFLT_PERIOD);
+			properties.put(TAG_PERIOD, period);
 
-			properties.put(STATUS, FINISHED);
+			properties.put(TAG_STATUS, STATUS.FINISHED);
 		}
 
 	}
@@ -90,8 +106,7 @@ public class BenchProperties {
 	@SuppressWarnings("unchecked")
 	static public JSONObject mergeProperties(JSONObject base, JSONObject adds) {
 		JSONObject combinedProperties = base;
-		for (@SuppressWarnings("rawtypes")
-		Iterator p = adds.keySet().iterator(); p.hasNext();) {
+		for (@SuppressWarnings("rawtypes") Iterator p = adds.keySet().iterator(); p.hasNext();) {
 			String key = (String) p.next();
 			combinedProperties.put(key, adds.get(key));
 		}

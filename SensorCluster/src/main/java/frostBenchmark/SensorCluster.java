@@ -1,24 +1,35 @@
 package frostBenchmark;
 
+import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.sta.model.Thing;
+import frostBenchmark.BenchProperties.STATUS;
 import java.io.IOException;
 import java.net.URISyntaxException;
-
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
-import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
-import de.fraunhofer.iosb.ilt.sta.model.Thing;
-
 public class SensorCluster extends MqttHelper {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SensorCluster.class);
+	public static final int QOS = 2;
+	public static final int PORT = 1883;
 
+	private SensorScheduler scheduler;
 
 	public SensorCluster(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
-		// TODO Auto-generated constructor stub
+	}
+
+	public void init() throws Throwable {
+		scheduler = new SensorScheduler();
+		scheduler.initWorkLoad();
+
+		Thing benchmarkThing = BenchData.getBenchmarkThing();
+		String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
+		this.subscribe(topic, QOS);
 	}
 
 	/**
@@ -26,76 +37,79 @@ public class SensorCluster extends MqttHelper {
 	 *
 	 * This method handles parsing the arguments specified on the command-line
 	 * before performing the specified action.
-	 * 
+	 *
+	 * @param args
 	 * @throws URISyntaxException
 	 * @throws IOException
 	 * @throws ServiceFailureException
 	 */
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
 
-		String topic = null;
-		int qos = 2;
-		int port = 1883;
 		String clientId = "BechmarkSensorCluster-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
 		BenchData.initialize();
-		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
-		Run.initWorkLoad();
-		
-		LOGGER.info("Starting " + BenchProperties.workers + " Sensor Data Generators with " + BenchProperties.postdelay + " msec post delay");
-
-		topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
+		LOGGER.info("Starting {} Threads to simulate {} Sensor Data Generators with {} msec post period",
+				BenchProperties.workers,
+				BenchProperties.sensors,
+				BenchProperties.period
+		);
 
 		try {
 			// Create an instance of the Sample client wrapper
 			LOGGER.trace("using mqtt broker: " + BenchData.broker);
-			String url = protocol + BenchData.broker + ":" + port;
+			String url = protocol + BenchData.broker + ":" + PORT;
 			SensorCluster sensors = new SensorCluster(url, clientId, cleanSession);
-
-			sensors.subscribe(topic, qos);
-
+			sensors.init();
 		} catch (MqttException me) {
-			// Display full details of any exception that occurs
-			LOGGER.error("reason " + me.getReasonCode());
-			LOGGER.error("msg " + me.getMessage());
-			LOGGER.error("loc " + me.getLocalizedMessage());
-			LOGGER.error("cause " + me.getCause());
-			LOGGER.error("excep " + me);
-			me.printStackTrace();
-		} catch (Throwable th) {
-			LOGGER.error("Throwable caught " + th);
-			th.printStackTrace();
+			LOGGER.error("MQTT exception", me);
+		} catch (Throwable me) {
+			LOGGER.error("Something bad happened.", me);
 		}
 	}
 
-	@Override
 	/**
+	 * @param topic
+	 * @param message
+	 * @throws org.eclipse.paho.client.mqttv3.MqttException
 	 * @throws URISyntaxException
 	 * @throws ServiceFailureException
 	 * @see MqttCallback#messageArrived(String, MqttMessage)
 	 */
-	public void messageArrived(String topic, MqttMessage message)
-			throws MqttException, ServiceFailureException, URISyntaxException {
+	@Override
+	public void messageArrived(String topic, MqttMessage message) throws MqttException, ServiceFailureException, URISyntaxException {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
 		JSONObject p = (JSONObject) msg.get("properties");
-		String benchState = p.getString("state");
 
-		LOGGER.info("Entering " + benchState + " mode");
+		STATUS benchState = STATUS.TERMINATE;
+		String statusString = p.getString(BenchProperties.TAG_STATUS);
+		try {
+			benchState = STATUS.valueOf(statusString.toUpperCase());
+		} catch (IllegalArgumentException exc) {
+			LOGGER.error("Received unknown status value: {}", statusString);
+			LOGGER.trace("Exception: ", exc);
+		}
 
-		if (benchState.equalsIgnoreCase(RUNNING)) {
-			// start the client
-			Run.startWorkLoad();
-		} else if (benchState.equalsIgnoreCase(FINISHED)) {
-			// get the results
-			Run.stopWorkLoad();
-		} else if (benchState.equalsIgnoreCase(TERMINATE)) {
-			LOGGER.info("Terminate Command received - exit process");
-			state = DISCONNECT;
-			this.waiter.notify();
+		LOGGER.info("Entering {} mode", benchState);
+		switch (benchState) {
+			case RUNNING:
+				// start the client
+				scheduler.startWorkLoad();
+				break;
+
+			case FINISHED:
+				// get the results
+				scheduler.stopWorkLoad();
+				break;
+
+			case TERMINATE:
+				LOGGER.info("Terminate Command received - exit process");
+				setState(STATE.DISCONNECT);
+				scheduler.terminate();
+				break;
 		}
 	}
 }
