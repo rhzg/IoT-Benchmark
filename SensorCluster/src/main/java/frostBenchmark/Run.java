@@ -3,12 +3,17 @@ package frostBenchmark;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import org.slf4j.LoggerFactory;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
+
+import static java.util.concurrent.TimeUnit.*;
 
 public class Run {
 
@@ -32,16 +37,26 @@ public class Run {
 		LOGGER.trace("Benchmark initialized");
 	}
 
-	static void startWorkLoad() {
-		LOGGER.trace("Benchmark start workload");
-		for (int i = 0; i < BenchProperties.workers; i++) {
-			dsList[i].startUp(BenchProperties.postdelay);
-		}
+	
+private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1); 
+
+	static void startWorkLoad() throws ServiceFailureException, URISyntaxException {
+		DataSource ds = new DataSource(BenchData.service).intialize("BenchmarkWorker");
 		startTime = System.currentTimeMillis();
-		LOGGER.trace("Benchmark workload started");
+		scheduler.scheduleAtFixedRate(ds, 0, BenchProperties.period, MILLISECONDS);
+		
+//		LOGGER.trace("Benchmark start workload");
+//		for (int i = 0; i < BenchProperties.workers; i++) {
+//			dsList[i].startUp(BenchProperties.postdelay);
+//		}
+//		startTime = System.currentTimeMillis();
+//		LOGGER.trace("Benchmark workload started");
 	}
 
 	static void stopWorkLoad() {
+		scheduler.shutdown();
+		
+		
 		LOGGER.trace("Benchmark finishing");
 		stopTime = System.currentTimeMillis();
 		int entries = 0;

@@ -10,9 +10,8 @@ import de.fraunhofer.iosb.ilt.sta.model.Id;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 
-
 public class DataSource implements Runnable {
-	
+
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DataSource.class);
 
 	private SensorThingsService service;
@@ -20,7 +19,7 @@ public class DataSource implements Runnable {
 	private int nbEntries = 0;
 	private boolean running = false;
 	private long POSTDELAY = 1000;
-	
+
 	private Datastream datastream;
 
 	public Thread myThread = null;
@@ -28,9 +27,8 @@ public class DataSource implements Runnable {
 	public DataSource(SensorThingsService sensorThingsService) {
 		service = sensorThingsService;
 	}
-	
+
 	public static Id thingId = null;
-	
 
 	/**
 	 * find or create the datastream for given name
@@ -41,12 +39,12 @@ public class DataSource implements Runnable {
 	 * @throws URISyntaxException
 	 */
 	public DataSource intialize(String name) throws ServiceFailureException, URISyntaxException {
-		myName = name;
-		datastream = BenchData.getDatastream(name);
+		myName = name + Thread.currentThread().getName();
+		datastream = BenchData.getDatastream(myName);
 		return this;
 	}
 
-	public void run() {
+	public void _run() {
 		long startTime = System.currentTimeMillis();
 		Observation o = null;
 		double observateRate;
@@ -68,7 +66,21 @@ public class DataSource implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
 
+	public void run() {
+		long startTime = System.currentTimeMillis();
+		Observation o = null;
+		double observateRate;
+		long currentTime = System.currentTimeMillis();
+		observateRate = (double) nbEntries * 1000.0 / ((currentTime > startTime) ? currentTime - startTime : 1);
+		o = new Observation(observateRate, datastream);
+		nbEntries++;
+		try {
+			service.create(o);
+		} catch (ServiceFailureException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	public int endUp() {
