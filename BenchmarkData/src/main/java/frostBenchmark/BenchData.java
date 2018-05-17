@@ -1,6 +1,7 @@
 package frostBenchmark;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.sta.Utils;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Location;
 import de.fraunhofer.iosb.ilt.sta.model.ObservedProperty;
@@ -137,7 +138,7 @@ public class BenchData {
 		LOGGER.debug("getSensor: " + name);
 
 		try {
-			dataStream = getBenchmarkThing().datastreams().query().filter("name eq '" + name + "'").first();
+			dataStream = getBenchmarkThing().datastreams().query().filter("name eq '" + Utils.escapeForStringConstant(name) + "'").first();
 
 			if (dataStream == null) {
 				dataStream = createDatastream(name);

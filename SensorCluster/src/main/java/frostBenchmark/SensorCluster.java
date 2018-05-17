@@ -110,6 +110,9 @@ public class SensorCluster extends MqttHelper {
 				setState(STATE.DISCONNECT);
 				scheduler.terminate();
 				break;
+
+			default:
+				LOGGER.error("Unhandled state: {}", benchState);
 		}
 	}
 }
