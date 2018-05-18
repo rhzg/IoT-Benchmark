@@ -3,7 +3,6 @@ package frostBenchmark;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import frostBenchmark.BenchProperties.STATUS;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -29,7 +28,7 @@ public class SensorCluster extends MqttHelper {
 
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 		String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
-		this.subscribe(topic, QOS);
+		subscribeAndWait(topic, QOS);
 	}
 
 	/**
@@ -38,12 +37,12 @@ public class SensorCluster extends MqttHelper {
 	 * This method handles parsing the arguments specified on the command-line
 	 * before performing the specified action.
 	 *
-	 * @param args
-	 * @throws URISyntaxException
-	 * @throws IOException
-	 * @throws ServiceFailureException
+	 * @param args ignored
+	 * @throws URISyntaxException If there is a problem with the Service URI.
+	 * @throws ServiceFailureException If there is a problem communicating with
+	 * the SensorThings service.
 	 */
-	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
+	public static void main(String[] args) throws URISyntaxException, ServiceFailureException {
 
 		String clientId = "BechmarkSensorCluster-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
@@ -71,15 +70,15 @@ public class SensorCluster extends MqttHelper {
 	}
 
 	/**
-	 * @param topic
-	 * @param message
-	 * @throws org.eclipse.paho.client.mqttv3.MqttException
-	 * @throws URISyntaxException
-	 * @throws ServiceFailureException
+	 * @param topic The topic the message arrived on.
+	 * @param message The message that arrived.
+	 * @throws URISyntaxException If there is a problem with the Service URI.
+	 * @throws ServiceFailureException If there is a problem communicating with
+	 * the SensorThings service.
 	 * @see MqttCallback#messageArrived(String, MqttMessage)
 	 */
 	@Override
-	public void messageArrived(String topic, MqttMessage message) throws MqttException, ServiceFailureException, URISyntaxException {
+	public void messageArrived(String topic, MqttMessage message) throws ServiceFailureException, URISyntaxException {
 
 		JSONObject msg = new JSONObject(new String(message.getPayload()));
 		JSONObject p = (JSONObject) msg.get("properties");

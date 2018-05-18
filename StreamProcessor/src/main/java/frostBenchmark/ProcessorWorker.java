@@ -37,7 +37,7 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		try {
-			subscribe(dataStreamTopic, StreamProcessor.qos);
+			subscribeAndWait(dataStreamTopic, StreamProcessor.qos);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			LOGGER.error(e.toString());

@@ -1,20 +1,16 @@
 package frostBenchmark;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.slf4j.LoggerFactory;
 
 public class ProcessorWorker extends MqttHelper implements Runnable {
 
@@ -26,17 +22,15 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 
 	public ProcessorWorker(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
-		// TODO Auto-generated constructor stub
 
 	}
 
+	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		try {
-			subscribe(dataStreamTopic, SubscriberCluster.qos);
+			subscribeAndWait(dataStreamTopic, SubscriberCluster.qos);
 		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			LOGGER.error(e.toString());
+			LOGGER.error("Exception: ", e);
 			System.exit(1);
 		}
 
@@ -57,14 +51,11 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 			entity = mapper.readValue(message.getPayload(), Observation.class);
 			processObservation(entity);
 		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Exception: ", e);
 		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Exception: ", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Exception: ", e);
 		}
 	}
 

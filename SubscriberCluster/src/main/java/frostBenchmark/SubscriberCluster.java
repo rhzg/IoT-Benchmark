@@ -54,10 +54,10 @@ public class SubscriberCluster extends MqttHelper {
 			LOGGER.info(nbProcessors + " created out of " + dataStreams.size() + " Datastreams (coverage="
 					+ 100 * nbProcessors / dataStreams.size() + "[" + BenchProperties.coverage + "]");
 
-			// subscribe for benchmark commands
+			// subscribeAndWait for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
 			SubscriberCluster processor = new SubscriberCluster(url, clientId, cleanSession);
-			processor.subscribe(topic, qos);
+			processor.subscribeAndWait(topic, qos);
 
 		} catch (MqttException me) {
 			LOGGER.error("MQTT exception", me);
@@ -105,8 +105,7 @@ public class SubscriberCluster extends MqttHelper {
 				try {
 					BenchData.service.create(new Observation(rate, ds));
 				} catch (ServiceFailureException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOGGER.trace("Exception: ", e);
 				}
 
 				LOGGER.info(ProcessorWorker.getNotificationsReceived() + " Notifications received");
