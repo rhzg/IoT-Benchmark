@@ -28,11 +28,11 @@ public class BenchProperties {
 	public static int coverage = 100;
 
 	public static final String TAG_PERIOD = "PERIOD";
-	public static final int DFLT_PERIOD = 100;
+	public static final int DFLT_PERIOD = 500;
 	public static int period = DFLT_PERIOD;
 
 	public static final String TAG_SENSORS = "SENSORS";
-	public static final int DFLT_SENSORS = 100;
+	public static final int DFLT_SENSORS = 20;
 	public static int sensors = DFLT_SENSORS;
 
 	public static final String TAG_WORKERS = "WORKERS";
@@ -58,6 +58,11 @@ public class BenchProperties {
 
 	public static void setProperties(Map<String, Object> properties) {
 		BenchProperties.properties = properties;
+	}
+
+	public static void setProperty(String key, Object value) {
+		BenchProperties.properties.put(key, value);
+
 	}
 
 	public static String getEnv(String name, String deflt) {
@@ -115,5 +120,12 @@ public class BenchProperties {
 			combinedProperties.put(key, adds.get(key));
 		}
 		return combinedProperties;
+	}
+
+	static public void addProperties(JSONObject adds) {
+		for (@SuppressWarnings("rawtypes") Iterator p = adds.keySet().iterator(); p.hasNext();) {
+			String key = (String) p.next();
+			properties.put(key, adds.get(key));
+		}
 	}
 }

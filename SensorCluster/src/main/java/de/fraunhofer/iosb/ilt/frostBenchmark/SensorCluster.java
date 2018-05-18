@@ -7,7 +7,9 @@ import java.net.URISyntaxException;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.LoggerFactory;
 
 public class SensorCluster extends MqttHelper {
@@ -80,11 +82,19 @@ public class SensorCluster extends MqttHelper {
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws ServiceFailureException, URISyntaxException {
 
-		JSONObject msg = new JSONObject(new String(message.getPayload()));
-		JSONObject p = (JSONObject) msg.get("properties");
-
+		JSONParser parser = new JSONParser();
+		JSONObject msg = null;
+		try {
+			msg = (JSONObject) parser.parse(new String(message.getPayload()));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			LOGGER.error("can not parse mqtt message", e);
+			System.exit(1);
+		}
+		JSONObject properties = (JSONObject) msg.get("properties");
+		BenchProperties.addProperties(properties);
 		STATUS benchState = STATUS.TERMINATE;
-		String statusString = p.getString(BenchProperties.TAG_STATUS);
+		String statusString = (String) properties.get(BenchProperties.TAG_STATUS);
 		try {
 			benchState = STATUS.valueOf(statusString.toUpperCase());
 		} catch (IllegalArgumentException exc) {
