@@ -1,4 +1,4 @@
-package frostBenchmark;
+package de.fraunhofer.iosb.ilt.frostBenchmark;
 
 import java.util.ArrayList;
 import java.util.List;

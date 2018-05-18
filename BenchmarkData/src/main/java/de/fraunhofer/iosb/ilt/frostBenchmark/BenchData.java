@@ -1,4 +1,4 @@
-package frostBenchmark;
+package de.fraunhofer.iosb.ilt.frostBenchmark;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.Utils;

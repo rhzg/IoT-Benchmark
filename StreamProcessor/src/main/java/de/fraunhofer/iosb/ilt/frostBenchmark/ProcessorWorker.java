@@ -1,4 +1,4 @@
-package frostBenchmark;
+package de.fraunhofer.iosb.ilt.frostBenchmark;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -16,21 +16,28 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ProcessorWorker.class);
 
-	String dataStreamTopic = null;
+	private String dataStreamTopic = null;
+
+	public void setDataStreamTopic(String dataStreamTopic) {
+		this.dataStreamTopic = dataStreamTopic;
+	}
 
 	static private long notificationsReceived = 0;
 
 	public ProcessorWorker(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
+		// TODO Auto-generated constructor stub
 
 	}
 
 	@Override
 	public void run() {
+		// TODO Auto-generated method stub
 		try {
-			subscribeAndWait(dataStreamTopic, SubscriberCluster.qos);
+			subscribeAndWait(dataStreamTopic, StreamProcessor.qos);
 		} catch (Throwable e) {
-			LOGGER.error("Exception: ", e);
+			// TODO Auto-generated catch block
+			LOGGER.error(e.toString());
 			System.exit(1);
 		}
 
@@ -51,16 +58,22 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 			entity = mapper.readValue(message.getPayload(), Observation.class);
 			processObservation(entity);
 		} catch (JsonParseException e) {
-			LOGGER.error("Exception: ", e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (JsonMappingException e) {
-			LOGGER.error("Exception: ", e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
-			LOGGER.error("Exception: ", e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
 	private void processObservation(Observation obs) {
 		incNotificationsReceived();
+		// so something with the observation
+		double d = Double.parseDouble(obs.getResult().toString());
+		d = d * d;
 	}
 
 	public static synchronized long getNotificationsReceived() {

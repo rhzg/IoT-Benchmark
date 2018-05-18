@@ -1,8 +1,8 @@
-package frostBenchmark;
+package de.fraunhofer.iosb.ilt.frostBenchmark;
 
+import de.fraunhofer.iosb.ilt.frostBenchmark.BenchProperties.STATUS;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
-import frostBenchmark.BenchProperties.STATUS;
 import java.net.URISyntaxException;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;

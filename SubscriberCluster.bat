@@ -12,4 +12,4 @@ REM Percentage of Datastreams covered by mqtt subsribers
 set COVERAGE=50
 
 
-java -cp .\SubscriberCluster\target\SubscriberCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar frostBenchmark.SubscriberCluster
+java -jar .\SubscriberCluster\target\SubscriberCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar

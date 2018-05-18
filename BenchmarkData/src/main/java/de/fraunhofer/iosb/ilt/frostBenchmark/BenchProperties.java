@@ -1,4 +1,4 @@
-package frostBenchmark;
+package de.fraunhofer.iosb.ilt.frostBenchmark;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -100,9 +100,9 @@ public class BenchProperties {
 
 			sensors = getEnv(TAG_SENSORS, DFLT_SENSORS);
 			properties.put(TAG_SENSORS, sensors);
-			
+
 			properties.put(TAG_STATUS, STATUS.FINISHED);
-			
+
 		}
 
 	}

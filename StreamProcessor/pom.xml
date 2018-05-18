@@ -10,7 +10,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mainClass>frostBenchmark.StreamProcessor</mainClass>
+		<mainClass>de.fraunhofer.iosb.ilt.frostBenchmark.StreamProcessor</mainClass>
 		<docker-image-name>fraunhoferiosb/streamprocessor</docker-image-name>
 	</properties>
 

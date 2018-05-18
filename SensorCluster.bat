@@ -16,4 +16,4 @@ set PERIOD=500
 
 set SENSORS=10
 
-java -jar .\SensorCluster\target\SensorCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar 
+java -jar .\SensorCluster\target\SensorCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar

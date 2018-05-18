@@ -1,4 +1,4 @@
-package frostBenchmark;
+package de.fraunhofer.iosb.ilt.frostBenchmark;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
@@ -13,28 +13,24 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
-public class SubscriberCluster extends MqttHelper {
+public class StreamProcessor extends MqttHelper {
 
+	private static long startTime = 0;
+	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StreamProcessor.class);
 	static int qos = 2;
 	static int port = 1883;
 
-	private static long startTime = 0;
-
-	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SubscriberCluster.class);
-
-	public SubscriberCluster(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
+	public StreamProcessor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
 	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
-		String broker;
 		String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
 		BenchData.initialize();
 		String url = protocol + BenchData.broker + ":" + port;
-
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		try {
@@ -46,7 +42,7 @@ public class SubscriberCluster extends MqttHelper {
 				if (random.nextInt(100) < BenchProperties.coverage) {
 					ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
 							cleanSession);
-					processor.dataStreamTopic = "v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations";
+					processor.setDataStreamTopic("v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations");
 					new Thread(processor).start();
 					nbProcessors++;
 				}
@@ -56,7 +52,7 @@ public class SubscriberCluster extends MqttHelper {
 
 			// subscribeAndWait for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
-			SubscriberCluster processor = new SubscriberCluster(url, clientId, cleanSession);
+			StreamProcessor processor = new StreamProcessor(url, clientId, cleanSession);
 			processor.subscribeAndWait(topic, qos);
 
 		} catch (MqttException me) {
