@@ -24,9 +24,10 @@ public class Controller {
 
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
-		String cmdInfo = "Available command are <run [msec]>, <stop>, <terminate>, <help>, <delete>, <quit>";
+		String cmdInfo = "Available command are <run [msec]>, <stop>, <script file>, <terminate>, <help>, <delete>, <quit>";
 
 		BenchData.initialize();
+		Scheduler scriptScheduler = new Scheduler();
 
 		Thing myThing = BenchData.getBenchmarkThing();
 
@@ -40,16 +41,12 @@ public class Controller {
 			String[] cmd = sc.nextLine().split(" ");
 			if (cmd[0].equalsIgnoreCase("run")) {
 				// processing the RUN command -------------------------------
-				properties.put("state", BenchProperties.STATUS.RUNNING);
-				myThing.setProperties(properties);
-				BenchData.service.update(myThing);
+				scriptScheduler.startExperiment();
 				if (cmd.length > 1) {
 					int ms = Integer.parseInt(cmd[1]);
 					System.out.println("running for " + ms + " msec");
 					Thread.sleep(ms);
-					properties.put("state", BenchProperties.STATUS.FINISHED);
-					myThing.setProperties(properties);
-					BenchData.service.update(myThing);
+					scriptScheduler.stopExperiment();
 				}
 			} else if (cmd[0].equalsIgnoreCase("stop")) {
 				// processing the STOP command ----------------------------
@@ -75,7 +72,6 @@ public class Controller {
 				// processing the SCRIPT command -------------------------------
 				if (cmd.length > 1) {
 					System.out.println("running script " + cmd[1]);
-					Scheduler scriptScheduler = new Scheduler();
 					scriptScheduler.readSchedule(cmd[1]);
 					scriptScheduler.runScript();
 				} else {
@@ -83,20 +79,19 @@ public class Controller {
 				}
 			} else if (cmd[0].equalsIgnoreCase("terminate") || cmd[0].equalsIgnoreCase("t")) {
 				// processing the TERMINATE command ------------------------
-				properties.put("state", BenchProperties.STATUS.TERMINATE);
-				myThing.setProperties(properties);
-				BenchData.service.update(myThing);
+				scriptScheduler.terminateSession();
 				System.out.println("Terminate message sent");
 			} else if (cmd[0].equalsIgnoreCase("help") || cmd[0].equalsIgnoreCase("h")) {
 				// processing the HELP command ---------------------------------------------
-				System.out.println("Base URL     : " + BenchData.baseUri.toString());
-				System.out.println("Session Id   : " + BenchData.sessionId);
-				System.out.println("<run [msec]> : Start all benchmark process with optional parameter time im msec");
-				System.out.println("<stop>       : Stop all running processes");
-				System.out.println("<terminate>  : Terminte all running benchmark processes");
-				System.out.println("<delete>     : Deletes all data in base url - THINK TWICE BEFORE USING THIS!!!");
-				System.out.println("<help>       : print this help info");
-				System.out.println("<quit>       : Quit this Controller terminal");
+				System.out.println("Base URL      : " + BenchData.baseUri.toString());
+				System.out.println("Session Id    : " + BenchData.sessionId);
+				System.out.println("<run [msec]>  : Start all benchmark process with optional parameter time im msec");
+				System.out.println("<script file> : Start all benchmark script with file name");
+				System.out.println("<stop>        : Stop all running processes");
+				System.out.println("<terminate>   : Terminte all running benchmark processes");
+				System.out.println("<delete>      : Deletes all data in base url - THINK TWICE BEFORE USING THIS!!!");
+				System.out.println("<help>        : print this help info");
+				System.out.println("<quit>        : Quit this Controller terminal");
 			} else if (cmd[0].equalsIgnoreCase("quit") || cmd[0].equalsIgnoreCase("q")) {
 				running = false;
 				System.out.println("Bye");

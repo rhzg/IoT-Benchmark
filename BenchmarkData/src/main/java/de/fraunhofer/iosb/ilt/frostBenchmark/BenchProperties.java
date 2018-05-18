@@ -60,6 +60,10 @@ public class BenchProperties {
 		BenchProperties.properties = properties;
 	}
 
+	public static void setProperty(String key, Object value) {
+		BenchProperties.properties.put(key, value);
+
+	}
 	public static String getEnv(String name, String deflt) {
 		String value = System.getenv(name);
 		if (value == null) {
@@ -115,5 +119,12 @@ public class BenchProperties {
 			combinedProperties.put(key, adds.get(key));
 		}
 		return combinedProperties;
+	}
+	
+	static public void addProperties (JSONObject adds) {
+		for (@SuppressWarnings("rawtypes") Iterator p = adds.keySet().iterator(); p.hasNext();) {
+			String key = (String) p.next();
+			properties.put(key, adds.get(key));
+		}		
 	}
 }

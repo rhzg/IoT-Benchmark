@@ -9,25 +9,24 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import de.fraunhofer.iosb.ilt.frostBenchmark.BenchProperties;
-
+import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
+import de.fraunhofer.iosb.ilt.sta.model.Thing;
 
 public class Scheduler {
 
 	JSONObject script = null;
-	
-	
-	public void readSchedule (String scheduleFile) {
+	Thing sessionThing = null;
+
+	public void readSchedule(String scheduleFile) {
 		FileReader fr;
 		try {
 			fr = new FileReader(scheduleFile);
-			JSONParser parser = new JSONParser();			
+			JSONParser parser = new JSONParser();
 			script = (JSONObject) parser.parse(fr);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParseException e) {
@@ -35,28 +34,54 @@ public class Scheduler {
 			e.printStackTrace();
 		}
 	}
-	
-	public void runScript() {
-		if (script == null) return;
-		
+
+	public void runScript() throws ServiceFailureException, InterruptedException {
+		if (script == null)
+			return;
+
 		JSONObject properties = (JSONObject) script.get("initialize");
-		
+		BenchProperties.addProperties(properties);
+
 		JSONArray sequence = (JSONArray) script.get("sequence");
-		for (int i=0; i<sequence.size(); i++) {
+		for (int i = 0; i < sequence.size(); i++) {
 			JSONObject run = (JSONObject) sequence.get(i);
 			Long duration = (Long) run.get("duration");
-			Long seqId= (Long) run.get("seq");
+			Long seqId = (Long) run.get("seq");
 			System.out.println("run experiment " + seqId + " for " + duration + " msec");
 			JSONObject runProperties = (JSONObject) run.get("properties");
-			JSONObject combinedProperties = BenchProperties.mergeProperties(properties, runProperties);
-			
-			System.out.println(combinedProperties.toString());
-			System.out.println("--- not implemented yes ---");
-			System.out.println();
+			BenchProperties.addProperties(runProperties);
+
+			startExperiment();
+			Thread.sleep(duration);
+			stopExperiment();
 		}
+		System.out.println("finished");
 	}
-	
-	public void startExperiment() {
-		
+
+	public void startExperiment() throws ServiceFailureException {
+		if (sessionThing == null)
+			sessionThing = BenchData.getBenchmarkThing();
+		BenchProperties.setProperty("state", BenchProperties.STATUS.RUNNING);
+		sessionThing.setProperties(BenchProperties.getProperties());
+		BenchData.service.update(sessionThing);
+
+	}
+
+	public void stopExperiment() throws ServiceFailureException {
+		if (sessionThing == null)
+			sessionThing = BenchData.getBenchmarkThing();
+		BenchProperties.setProperty("state", BenchProperties.STATUS.FINISHED);
+		sessionThing.setProperties(BenchProperties.getProperties());
+		BenchData.service.update(sessionThing);
+
+	}
+
+	public void terminateSession() throws ServiceFailureException {
+		if (sessionThing == null)
+			sessionThing = BenchData.getBenchmarkThing();
+		BenchProperties.setProperty("state", BenchProperties.STATUS.TERMINATE);
+		sessionThing.setProperties(BenchProperties.getProperties());
+		BenchData.service.update(sessionThing);
+
 	}
 }
