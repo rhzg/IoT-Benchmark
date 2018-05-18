@@ -2,16 +2,21 @@ package de.fraunhofer.iosb.ilt.frostBenchmark;
 
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Scheduler {
 
+	/**
+	 * The logger for this class.
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler.class);
 	JSONObject script = null;
 	Thing sessionThing = null;
 
@@ -21,12 +26,8 @@ public class Scheduler {
 			fr = new FileReader(scheduleFile);
 			JSONParser parser = new JSONParser();
 			script = (JSONObject) parser.parse(fr);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
+		} catch (ParseException | IOException e) {
+			LOGGER.error("Failed to load json.", e);
 		}
 	}
 

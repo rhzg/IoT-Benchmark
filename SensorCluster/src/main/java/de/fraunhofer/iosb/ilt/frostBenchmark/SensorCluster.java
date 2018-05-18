@@ -106,7 +106,7 @@ public class SensorCluster extends MqttHelper {
 		switch (benchState) {
 			case RUNNING:
 				// start the client
-				scheduler.startWorkLoad();
+				scheduler.startWorkLoad(properties);
 				break;
 
 			case FINISHED:

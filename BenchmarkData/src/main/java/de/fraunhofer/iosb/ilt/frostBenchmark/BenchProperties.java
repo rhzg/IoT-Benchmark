@@ -62,7 +62,6 @@ public class BenchProperties {
 
 	public static void setProperty(String key, Object value) {
 		BenchProperties.properties.put(key, value);
-
 	}
 
 	public static String getEnv(String name, String deflt) {
@@ -127,5 +126,24 @@ public class BenchProperties {
 			String key = (String) p.next();
 			properties.put(key, adds.get(key));
 		}
+	}
+
+	static public String getProperty(JSONObject from, String name, String dflt) {
+		Object value = from.get(name);
+		if (value == null) {
+			return dflt;
+		}
+		return value.toString();
+	}
+
+	static public int getProperty(JSONObject from, String name, int dflt) {
+		Object value = from.get(name);
+		if (value == null) {
+			return dflt;
+		}
+		if (value instanceof Number) {
+			return ((Number) value).intValue();
+		}
+		return dflt;
 	}
 }

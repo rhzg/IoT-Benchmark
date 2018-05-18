@@ -63,7 +63,7 @@ public class DataSource implements Runnable {
 
 	public int reset() {
 		double observateRate = calculateRate();
-		LOGGER.info("{} created {} entries at a rate of {}/s", myName, createdObsCount, String.format("%.2f", observateRate));
+		LOGGER.debug("{} created {} entries at a rate of {}/s", myName, createdObsCount, String.format("%.2f", observateRate));
 		startTime = 0;
 		int obsCount = createdObsCount;
 		createdObsCount = 0;
