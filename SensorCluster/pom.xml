@@ -10,7 +10,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mainClass>frostBenchmark.SensorCluster</mainClass>
+		<mainClass>de.fraunhofer.iosb.ilt.frostBenchmark.SensorCluster</mainClass>
 		<docker-image-name>fraunhoferiosb/sensorcluster</docker-image-name>
 	</properties>
 
