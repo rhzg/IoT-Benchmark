@@ -49,6 +49,8 @@ public class Scheduler {
 			JSONObject combinedProperties = BenchProperties.mergeProperties(properties, runProperties);
 			
 			System.out.println(combinedProperties.toString());
+			System.out.println("--- not implemented yes ---");
+			System.out.println();
 		}
 	}
 }

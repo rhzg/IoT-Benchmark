@@ -19,3 +19,4 @@ set POSTDELAY=1
 
 
 java -cp .\BenchmarkController\target\BenchmarkController-0.0.1-SNAPSHOT-jar-with-dependencies.jar frostBenchmark.Controller
+pause
