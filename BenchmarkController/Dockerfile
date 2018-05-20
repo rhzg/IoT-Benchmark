@@ -9,4 +9,4 @@ ENV POSTDELAY 1
       
 
 ADD target/BenchmarkController-0.0.1-SNAPSHOT-jar-with-dependencies.jar ./frostbenchmark.jar
-CMD ["/usr/bin/java", "-cp", "./frostbenchmark.jar", "frostBenchmark.Controller"]
+CMD ["/usr/bin/java", "-jar", "./frostbenchmark.jar"]
