@@ -21,26 +21,30 @@ import org.slf4j.LoggerFactory;
 
 public class BenchData {
 
-	static final String BENCHMARK = "Benchmark";
-	static final String SESSION = "SESSION";
-	static final String BASE_URL = "BASE_URL";
-	static final String BROKER = "BROKER";
-	static final String PROXYHOST = "proxyhost";
-	static final String PROXYPORT = "proxyport";
+	public static final String TAG_NAME = "NAME";
+	public static final String DFLT_NAME = "properties";
 
-	static URL baseUri = null;
-	static SensorThingsService service = null;
-	static String sessionId;
-	static String broker;
+	public static final String BENCHMARK = "Benchmark";
+	public static final String SESSION = "SESSION";
+	public static final String BASE_URL = "BASE_URL";
+	public static final String BROKER = "BROKER";
+	public static final String PROXYHOST = "proxyhost";
+	public static final String PROXYPORT = "proxyport";
+
+	public static String name = DFLT_NAME;
+	public static URL baseUri = null;
+	public static SensorThingsService service = null;
+	public static String sessionId;
+	public static String broker;
 
 	static Thing sessionThing = null;
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BenchData.class);
 
 	public static void initialize() {
-		BenchProperties.intialize();
 		String baseUriStr = getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
 
+		name = getEnv(TAG_NAME, DFLT_NAME);
 		sessionId = getEnv(BenchData.SESSION, "0815").trim();
 
 		broker = getEnv(BROKER, "localhost").trim();
@@ -112,7 +116,7 @@ public class BenchData {
 			if (myThing == null) {
 				myThing = new Thing(BENCHMARK, sessionId);
 				Map<String, Object> thingProperties = new HashMap<>();
-				thingProperties.put("state", "stopped");
+				thingProperties.put(BenchProperties.TAG_STATUS, BenchProperties.STATUS.FINISHED);
 				thingProperties.put(SESSION, sessionId);
 				myThing.setProperties(thingProperties);
 				service.create(myThing);
@@ -161,7 +165,7 @@ public class BenchData {
 	 * @throws URISyntaxException
 	 */
 	private static Datastream createDatastream(String name) throws ServiceFailureException, URISyntaxException {
-		Datastream dataStream = null;
+		Datastream dataStream;
 
 		Sensor sensor = new Sensor(name, "Sensor for creating benchmark data", "text", "Some metadata.");
 		service.create(sensor);

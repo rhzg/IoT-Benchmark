@@ -1,3 +1,6 @@
+REM The name to use for finding our settings
+set NAME=Listener_1
+
 REM URL to be used for creating, subscribing and reading data
 set BASE_URL=http://localhost:8080/FROST-Server/v1.0/
 

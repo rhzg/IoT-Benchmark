@@ -1,3 +1,6 @@
+# The name to use for finding our settings
+export NAME=Sensor_1
+
 # URL to be used for creating, subscribing and reading data
 export BASE_URL=http://localhost:8080/FROST-Server/v1.0/
 

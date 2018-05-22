@@ -1,5 +1,6 @@
 package de.fraunhofer.iosb.ilt.frostBenchmark;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
@@ -10,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import org.json.simple.JSONObject;
 import org.slf4j.LoggerFactory;
 
 public class SensorScheduler {
@@ -19,70 +19,101 @@ public class SensorScheduler {
 
 	private ScheduledExecutorService scheduler;
 
-	private List<DataSource> dsList;
+	private List<DataSource> dsList = new ArrayList<>();
 	private long startTime = 0;
 	private long stopTime = 0;
 
-	private int workerCount;
-	private int sensorCount;
-	private int period;
+	BenchProperties settings;
+	private boolean running = false;
 
 	/**
 	 * TODO pass in settings object instead of using static BenchProperties
 	 */
 	public SensorScheduler() {
 		BenchData.initialize();
-		workerCount = BenchProperties.workers;
-		sensorCount = BenchProperties.sensors;
-		period = BenchProperties.period;
-
-		scheduler = Executors.newScheduledThreadPool(workerCount);
+		settings = new BenchProperties().readFromEnvironment();
+		scheduler = Executors.newScheduledThreadPool(settings.workers);
 	}
 
-	private int readParameterLogUpdates(JSONObject properties, String name, int oldVal) {
-		int newVal = BenchProperties.getProperty(properties, name, oldVal);
+	private int logUpdates(String name, int oldVal, int newVal) {
 		if (oldVal != newVal) {
-			LOGGER.info("Updating value of {} to {}.", name, newVal);
+			LOGGER.info("Updating value of {} from {} to {}.", name, oldVal, newVal);
 		}
 		return newVal;
 	}
 
-	private void readParameterWarnIfChanged(JSONObject properties, String name, int oldVal) {
-		int newVal = BenchProperties.getProperty(properties, name, oldVal);
+	private void warnIfChanged(String name, int oldVal, int newVal) {
 		if (oldVal != newVal) {
 			LOGGER.warn("Changing parameter {} is not supported, using old value {} instead of new value {}.", name, oldVal, newVal);
 		}
 	}
 
-	public void initWorkLoad() throws ServiceFailureException, URISyntaxException {
-		LOGGER.trace("Benchmark initializing, starting workers");
-		dsList = new ArrayList<>();
-		for (int i = 0; i < sensorCount; i++) {
-			String name = "Benchmark." + i;
-			DataSource sensor = new DataSource(BenchData.service).intialize(name);
-			dsList.add(sensor);
+	public synchronized void initWorkLoad(JsonNode updatedProperties) throws ServiceFailureException, URISyntaxException {
+		if (running) {
+			stopWorkLoad();
 		}
+		int oldWorkerCount = settings.workers;
+		int oldPeriod = settings.period;
+		settings.readFromJsonNode(updatedProperties);
+
+		LOGGER.debug("Benchmark initializing, starting workers");
+		logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
+		logUpdates(BenchProperties.TAG_WORKERS, oldWorkerCount, settings.workers);
+
+		if (oldWorkerCount != settings.workers) {
+			cleanupScheduler();
+			scheduler = Executors.newScheduledThreadPool(settings.workers);
+		}
+
+		int haveCount = dsList.size();
+		if (settings.sensors != haveCount) {
+			if (settings.sensors > haveCount) {
+				int toAdd = settings.sensors - haveCount;
+				LOGGER.info("Setting up {} new sensors.", toAdd);
+				for (int i = haveCount; i < settings.sensors; i++) {
+					String name = "Benchmark." + i;
+					DataSource sensor = new DataSource(BenchData.service).intialize(name);
+					dsList.add(sensor);
+				}
+			}
+			if (settings.sensors < haveCount) {
+				int toRemove = haveCount - settings.sensors;
+				LOGGER.info("Taking down {} sensors.", toRemove);
+				while (dsList.size() > settings.sensors) {
+					DataSource ds = dsList.remove(dsList.size() - 1);
+					ds.cancel();
+				}
+			}
+		}
+
 		LOGGER.trace("Benchmark initialized");
 	}
 
-	public void startWorkLoad(JSONObject properties) throws ServiceFailureException, URISyntaxException {
+	public synchronized void startWorkLoad(JsonNode properties) throws ServiceFailureException, URISyntaxException {
+		if (running) {
+			stopWorkLoad();
+		}
+		running = true;
 		startTime = System.currentTimeMillis();
 
-		period = readParameterLogUpdates(properties, BenchProperties.TAG_PERIOD, period);
-		readParameterWarnIfChanged(properties, BenchProperties.TAG_WORKERS, workerCount);
-		readParameterWarnIfChanged(properties, BenchProperties.TAG_SENSORS, sensorCount);
+		int oldPeriod = settings.period;
+		settings.readFromJsonNode(properties);
 
-		LOGGER.info("Starting workload: {} workers, {} sensors, {} delay.", workerCount, sensorCount, period);
-		double delayPerSensor = ((double) period) / sensorCount;
+		if (properties != null) {
+			logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
+		}
+
+		LOGGER.info("Starting workload: {} workers, {} sensors, {} delay.", settings.workers, settings.sensors, settings.period);
+		double delayPerSensor = ((double) settings.period) / settings.sensors;
 		double currentDelay = 0;
 		for (DataSource sensor : dsList) {
-			ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(sensor, (long) currentDelay, period, TimeUnit.MILLISECONDS);
+			ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(sensor, (long) currentDelay, settings.period, TimeUnit.MILLISECONDS);
 			sensor.setSchedulerHandle(handle);
 			currentDelay += delayPerSensor;
 		}
 	}
 
-	public void stopWorkLoad() {
+	public synchronized void stopWorkLoad() {
 		LOGGER.trace("Benchmark finishing");
 
 		for (DataSource sensor : dsList) {
@@ -105,10 +136,10 @@ public class SensorScheduler {
 
 		LOGGER.info(1000 * entries / (stopTime - startTime) + " entries created per sec");
 		LOGGER.info("Benchmark finished");
-
+		running = false;
 	}
 
-	public void terminate() {
+	private void cleanupScheduler() {
 		scheduler.shutdown();
 		boolean allOk = true;
 		try {
@@ -119,5 +150,10 @@ public class SensorScheduler {
 		if (!allOk) {
 			scheduler.shutdownNow();
 		}
+	}
+
+	public synchronized void terminate() {
+		stopWorkLoad();
+		cleanupScheduler();
 	}
 }
