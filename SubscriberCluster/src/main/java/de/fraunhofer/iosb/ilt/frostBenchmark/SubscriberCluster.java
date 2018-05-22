@@ -120,7 +120,7 @@ public class SubscriberCluster extends MqttHelper {
 	private void printStats() {
 		long endTime = System.currentTimeMillis();
 
-		Datastream ds = BenchData.getDatastream("SubsriberCluster");
+		Datastream ds = BenchData.getDatastream("SubscriberCluster");
 		long notificationCount = scheduler.resetNotificationCount();
 		double rate = (1000.0 * notificationCount) / (endTime - startTime);
 		try {
@@ -129,8 +129,8 @@ public class SubscriberCluster extends MqttHelper {
 			LOGGER.trace("Exception: ", e);
 		}
 
-		LOGGER.info("{} Notifications received", notificationCount);
-		LOGGER.info("{} notifications per sec", String.format("%.2f", rate));
+		LOGGER.info("-=> {} Notifications received", notificationCount);
+		LOGGER.info("-=> {} notifications per sec", String.format("%.2f", rate));
 	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {

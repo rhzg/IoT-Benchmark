@@ -134,7 +134,7 @@ public class SensorScheduler {
 			LOGGER.error("Failed.", exc);
 		}
 
-		LOGGER.info(1000 * entries / (stopTime - startTime) + " entries created per sec");
+		LOGGER.info("-=> {} entries created per sec", String.format("%.2f", rate));
 		LOGGER.info("Benchmark finished");
 		running = false;
 	}
