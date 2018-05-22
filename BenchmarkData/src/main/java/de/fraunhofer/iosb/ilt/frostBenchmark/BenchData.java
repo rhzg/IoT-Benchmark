@@ -120,10 +120,11 @@ public class BenchData {
 					thingProperties.put(BenchProperties.TAG_STATUS, BenchProperties.STATUS.FINISHED);
 					thingProperties.put(SESSION, sessionId);
 					myThing.setProperties(thingProperties);
+					service.create(myThing);
 
 					Location location = new Location("BenchmarkThing", "The location of the benchmark thing.", "application/geo+json", new Point(8, 52));
-					myThing.getLocations().add(location);
-					service.create(myThing);
+					location.getThings().add(myThing.withOnlyId());
+					service.create(location);
 				}
 			} catch (ServiceFailureException e) {
 				LOGGER.error("Exception:", e);
