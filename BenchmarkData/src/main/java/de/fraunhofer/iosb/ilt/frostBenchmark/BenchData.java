@@ -37,7 +37,8 @@ public class BenchData {
 	public static String sessionId;
 	public static String broker;
 
-	static Thing sessionThing = null;
+	private static Thing sessionThing = null;
+	private static final Object lock = new Object();
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BenchData.class);
 
@@ -92,42 +93,46 @@ public class BenchData {
 		if (sessionThing != null) {
 			return sessionThing;
 		}
+		synchronized (lock) {
+			// check if service has been initialized
+			if (service == null) {
+				LOGGER.error("uninitialized service call");
+				System.exit(1);
+			}
 
-		// check if service has been initialized
-		if (service == null) {
-			LOGGER.error("uninitialized service call");
-			System.exit(1);
-		}
+			// find the Benchmark Thing to control the load generators
+			Thing myThing = null;
 
-		// find the Benchmark Thing to control the load generators
-		Thing myThing = null;
-
-		// search for the session thing
-		EntityList<Thing> things;
-		try {
-			things = service.things().query().select("name", "id", "description").list();
-			for (Thing thing : things) {
-				LOGGER.trace(thing.toString());
-				if (sessionId.equalsIgnoreCase(thing.getDescription())) { // found it
-					myThing = service.things().find(thing.getId());
-					break;
+			// search for the session thing
+			EntityList<Thing> things;
+			try {
+				things = service.things().query().select("name", "id", "description").list();
+				for (Thing thing : things) {
+					LOGGER.trace(thing.toString());
+					if (sessionId.equalsIgnoreCase(thing.getDescription())) { // found it
+						myThing = service.things().find(thing.getId());
+						break;
+					}
 				}
-			}
-			if (myThing == null) {
-				myThing = new Thing(BENCHMARK, sessionId);
-				Map<String, Object> thingProperties = new HashMap<>();
-				thingProperties.put(BenchProperties.TAG_STATUS, BenchProperties.STATUS.FINISHED);
-				thingProperties.put(SESSION, sessionId);
-				myThing.setProperties(thingProperties);
-				service.create(myThing);
-			}
-		} catch (ServiceFailureException e) {
-			LOGGER.error("Exception:", e);
-			System.exit(1);
-		}
+				if (myThing == null) {
+					myThing = new Thing(BENCHMARK, sessionId);
+					Map<String, Object> thingProperties = new HashMap<>();
+					thingProperties.put(BenchProperties.TAG_STATUS, BenchProperties.STATUS.FINISHED);
+					thingProperties.put(SESSION, sessionId);
+					myThing.setProperties(thingProperties);
 
-		sessionThing = myThing;
-		return myThing;
+					Location location = new Location("BenchmarkThing", "The location of the benchmark thing.", "application/geo+json", new Point(8, 52));
+					myThing.getLocations().add(location);
+					service.create(myThing);
+				}
+			} catch (ServiceFailureException e) {
+				LOGGER.error("Exception:", e);
+				System.exit(1);
+			}
+
+			sessionThing = myThing;
+			return myThing;
+		}
 	}
 
 	/**
@@ -173,10 +178,6 @@ public class BenchData {
 
 		ObservedProperty obsProp1 = new ObservedProperty(name, new URI("http://ucom.org/temperature"), "observation rate");
 		service.create(obsProp1);
-
-		Location location = new Location(name, "Benchmark Random Location", "application/vnd.geo+json", new Point(8, 52));
-		location.getThings().add(sessionThing);
-		service.create(location);
 
 		dataStream = new Datastream(name, "Benchmark Random Stream", name,
 				new UnitOfMeasurement("observation rate", "observations per sec", ""));
