@@ -69,6 +69,12 @@ public class Controller {
 				} else {
 					System.out.println("missing script name");
 				}
+			} else if (cmd[0].equalsIgnoreCase("init") || cmd[0].equalsIgnoreCase("i")) {
+				if (cmd.length > 3) {
+					scriptScheduler.sendParameter(cmd[1], cmd[2], cmd[3]);
+				} else {
+					System.out.println("init needs 3 parameters.");
+				}
 			} else if (cmd[0].equalsIgnoreCase("terminate") || cmd[0].equalsIgnoreCase("t")) {
 				// processing the TERMINATE command ------------------------
 				scriptScheduler.sendCommands(null, BenchProperties.STATUS.TERMINATE);
@@ -77,13 +83,14 @@ public class Controller {
 				// processing the HELP command ---------------------------------------------
 				System.out.println("Base URL      : " + BenchData.baseUri.toString());
 				System.out.println("Session Id    : " + BenchData.sessionId);
-				System.out.println("<run [msec]>  : Start all benchmark process with optional parameter time im msec");
-				System.out.println("<script file> : Start all benchmark script with file name");
-				System.out.println("<stop>        : Stop all running processes");
-				System.out.println("<terminate>   : Terminte all running benchmark processes");
-				System.out.println("<delete>      : Deletes all data in base url - THINK TWICE BEFORE USING THIS!!!");
-				System.out.println("<help>        : print this help info");
-				System.out.println("<quit>        : Quit this Controller terminal");
+				System.out.println("run [msec]    : Start all benchmark process with optional parameter time im msec");
+				System.out.println("script <file> : Start all benchmark script with file name");
+				System.out.println("stop          : Stop all running processes");
+				System.out.println("terminate     : Terminte all running benchmark processes");
+				System.out.println("init <name> <field> <value> : Send the initialisation parameter <field> with value <value> to the process with name <name>");
+				System.out.println("delete        : Deletes all data in base url - THINK TWICE BEFORE USING THIS!");
+				System.out.println("help          : print this help info");
+				System.out.println("quit          : Quit this Controller terminal");
 			} else if (cmd[0].equalsIgnoreCase("quit") || cmd[0].equalsIgnoreCase("q")) {
 				running = false;
 				System.out.println("Bye");
