@@ -12,7 +12,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.LoggerFactory;
 
-public class SensorCluster extends MqttHelper {
+public class SensorCluster extends MqttHelper implements TimeoutListener {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SensorCluster.class);
 	public static final int QOS = 2;
@@ -24,20 +24,49 @@ public class SensorCluster extends MqttHelper {
 	 * The name to use when reading properties.
 	 */
 	private String name = "properties";
+	private TimeoutWatcher timeoutWatcher;
 
 	public SensorCluster(String name, String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
 		this.parser = new ObjectMapper();
 		this.name = name;
+		timeoutWatcher = new TimeoutWatcher();
 	}
 
 	public void init(BenchProperties benchProperties) throws Throwable {
+		timeoutWatcher.addTimeoutListener(this);
 		scheduler = new SensorScheduler();
 		scheduler.initWorkLoad(null);
 
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 		String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
 		subscribeAndWait(topic, QOS);
+	}
+
+	/**
+	 * Check if the given properties has a duration, and set a timeout based on
+	 * this.
+	 *
+	 * @param properties the properties to search a duration in.
+	 * @param disable Disable the timeout if no duration is found.
+	 */
+	private void updateTimeout(JsonNode properties, boolean disable) {
+		JsonNode durationNode = properties.get("duration");
+		if (durationNode == null || !durationNode.isNumber()) {
+			if (disable) {
+				timeoutWatcher.setNextTimeout(0);
+			}
+			return;
+		}
+		long duration = durationNode.asLong() + 2000;
+		timeoutWatcher.setNextTimeout(System.currentTimeMillis() + duration);
+		LOGGER.debug("Timeout set to now plus {}ms", duration);
+	}
+
+	@Override
+	public void timeoutReached() {
+		LOGGER.warn("Timeout reached, stopping workload.");
+		scheduler.stopWorkLoad();
 	}
 
 	/**
@@ -81,17 +110,20 @@ public class SensorCluster extends MqttHelper {
 			case RUNNING:
 				// start the client
 				scheduler.startWorkLoad(myProperties);
+				updateTimeout(properties, true);
 				break;
 
 			case FINISHED:
 				// get the results
 				scheduler.stopWorkLoad();
+				timeoutWatcher.setNextTimeout(0);
 				break;
 
 			case TERMINATE:
 				LOGGER.info("Terminate Command received - exit process");
 				setState(STATE.DISCONNECT);
 				scheduler.terminate();
+				timeoutWatcher.terminate();
 				break;
 
 			default:
