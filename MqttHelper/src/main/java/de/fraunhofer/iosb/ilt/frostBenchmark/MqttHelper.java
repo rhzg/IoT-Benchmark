@@ -168,7 +168,7 @@ public abstract class MqttHelper implements MqttCallback {
 			}
 			waitForStateChange(waitTime);
 		}
-		LOGGER.info("Exiting main loop.");
+		LOGGER.debug("Exiting main loop.");
 
 	}
 
@@ -179,7 +179,13 @@ public abstract class MqttHelper implements MqttCallback {
 	@Override
 	public void connectionLost(Throwable cause) {
 		LOGGER.error("Connection to {} lost: {}", brokerUrl, cause.getMessage());
-		LOGGER.debug("Exception:", cause);
+		LOGGER.info("Exception:", cause);
+		try {
+			client.reconnect();
+		} catch (MqttException exc) {
+			LOGGER.error("Failed to reconnect.", exc);
+			ex = cause;
+		}
 	}
 
 	/**

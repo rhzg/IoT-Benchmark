@@ -36,7 +36,7 @@ public class DataSource implements Runnable {
 	 * @throws URISyntaxException if something goes wrong
 	 */
 	public DataSource intialize(String name) throws ServiceFailureException, URISyntaxException {
-		myName = name + Thread.currentThread().getName();
+		myName = name;
 		datastream = BenchData.getDatastream(myName);
 		return this;
 	}
@@ -71,8 +71,10 @@ public class DataSource implements Runnable {
 	}
 
 	public void cancel() {
-		this.schedulerHandle.cancel(false);
-		this.schedulerHandle = null;
+		if (schedulerHandle != null) {
+			schedulerHandle.cancel(false);
+		}
+		schedulerHandle = null;
 	}
 
 	public ScheduledFuture<?> getSchedulerHandle() {

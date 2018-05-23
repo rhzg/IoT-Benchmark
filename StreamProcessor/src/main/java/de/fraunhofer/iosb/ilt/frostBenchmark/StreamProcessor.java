@@ -1,5 +1,8 @@
 package de.fraunhofer.iosb.ilt.frostBenchmark;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.fraunhofer.iosb.ilt.frostBenchmark.BenchProperties.STATUS;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
@@ -10,18 +13,25 @@ import java.net.URISyntaxException;
 import java.util.Random;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
 public class StreamProcessor extends MqttHelper {
 
-	private static long startTime = 0;
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StreamProcessor.class);
-	static int qos = 2;
-	static int port = 1883;
 
-	public StreamProcessor(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
+	private static long startTime = 0;
+	public static int qos = 2;
+	private static int port = 1883;
+	private ObjectMapper parser;
+	/**
+	 * The name to use when reading properties.
+	 */
+	private String name = "properties";
+
+	public StreamProcessor(String name, String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
+		this.parser = new ObjectMapper();
+		this.name = name;
 	}
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
@@ -33,13 +43,15 @@ public class StreamProcessor extends MqttHelper {
 		String url = protocol + BenchData.broker + ":" + port;
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
+		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
+
 		try {
 			// create processors for Datastream according to coverage
 			Random random = new Random();
 			int nbProcessors = 0;
 			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
 			for (Datastream dataStream : dataStreams) {
-				if (random.nextInt(100) < BenchProperties.coverage) {
+				if (random.nextInt(100) < benchProperties.coverage) {
 					ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
 							cleanSession);
 					processor.setDataStreamTopic("v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations");
@@ -48,11 +60,11 @@ public class StreamProcessor extends MqttHelper {
 				}
 			}
 			LOGGER.info(nbProcessors + " created out of " + dataStreams.size() + " Datastreams (coverage="
-					+ 100 * nbProcessors / dataStreams.size() + "[" + BenchProperties.coverage + "]");
+					+ 100 * nbProcessors / dataStreams.size() + "[" + benchProperties.coverage + "]");
 
 			// subscribeAndWait for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
-			StreamProcessor processor = new StreamProcessor(url, clientId, cleanSession);
+			StreamProcessor processor = new StreamProcessor(BenchData.name, url, clientId, cleanSession);
 			processor.subscribeAndWait(topic, qos);
 
 		} catch (MqttException me) {
@@ -68,16 +80,22 @@ public class StreamProcessor extends MqttHelper {
 	 * @throws ServiceFailureException
 	 * @see MqttCallback#messageArrived(String, MqttMessage)
 	 */
-	public void messageArrived(String topic, MqttMessage message)
-			throws MqttException, ServiceFailureException, URISyntaxException {
-
-		JSONObject msg = new JSONObject(new String(message.getPayload()));
-		JSONObject p = (JSONObject) msg.get("properties");
-
-		BenchProperties.STATUS benchState = BenchProperties.STATUS.TERMINATE;
-		String statusString = p.getString(BenchProperties.TAG_STATUS);
+	public void messageArrived(String topic, MqttMessage message) throws MqttException, ServiceFailureException, URISyntaxException {
+		JsonNode msg = null;
 		try {
-			benchState = BenchProperties.STATUS.valueOf(statusString.toUpperCase());
+			msg = parser.readTree(new String(message.getPayload()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			LOGGER.error("can not parse mqtt message", e);
+			System.exit(1);
+		}
+		JsonNode properties = msg.get(name);
+		BenchProperties benchProperties = new BenchProperties().readFromJsonNode(properties);
+
+		STATUS benchState = STATUS.TERMINATE;
+		String statusString = properties.get(BenchProperties.TAG_STATUS).asText();
+		try {
+			benchState = STATUS.valueOf(statusString.toUpperCase());
 		} catch (IllegalArgumentException exc) {
 			LOGGER.error("Received unknown status value: {}", statusString);
 			LOGGER.trace("Exception: ", exc);

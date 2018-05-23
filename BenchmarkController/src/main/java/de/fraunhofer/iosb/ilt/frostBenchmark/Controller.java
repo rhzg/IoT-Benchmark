@@ -8,7 +8,6 @@ import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 import java.util.Scanner;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +27,6 @@ public class Controller {
 
 		Thing myThing = BenchData.getBenchmarkThing();
 
-		Map<String, Object> properties = BenchProperties.getProperties();
-
 		System.out.println(cmdInfo);
 		boolean running = true;
 		Scanner sc = new Scanner(System.in);
@@ -38,18 +35,16 @@ public class Controller {
 			String[] cmd = sc.nextLine().split(" ");
 			if (cmd[0].equalsIgnoreCase("run")) {
 				// processing the RUN command -------------------------------
-				scriptScheduler.startExperiment();
+				scriptScheduler.sendCommands(null, BenchProperties.STATUS.RUNNING);
 				if (cmd.length > 1) {
 					int ms = Integer.parseInt(cmd[1]);
 					System.out.println("running for " + ms + " msec");
 					Thread.sleep(ms);
-					scriptScheduler.stopExperiment();
+					scriptScheduler.sendCommands(null, BenchProperties.STATUS.FINISHED);
 				}
 			} else if (cmd[0].equalsIgnoreCase("stop")) {
 				// processing the STOP command ----------------------------
-				properties.put("state", BenchProperties.STATUS.FINISHED);
-				myThing.setProperties(properties);
-				BenchData.service.update(myThing);
+				scriptScheduler.sendCommands(null, BenchProperties.STATUS.FINISHED);
 			} else if (cmd[0].equalsIgnoreCase("delete")) {
 				// processing the DELETE command --------------------------
 				System.out.println("All data in " + BenchData.baseUri.toString()
@@ -76,7 +71,7 @@ public class Controller {
 				}
 			} else if (cmd[0].equalsIgnoreCase("terminate") || cmd[0].equalsIgnoreCase("t")) {
 				// processing the TERMINATE command ------------------------
-				scriptScheduler.terminateSession();
+				scriptScheduler.sendCommands(null, BenchProperties.STATUS.TERMINATE);
 				System.out.println("Terminate message sent");
 			} else if (cmd[0].equalsIgnoreCase("help") || cmd[0].equalsIgnoreCase("h")) {
 				// processing the HELP command ---------------------------------------------
