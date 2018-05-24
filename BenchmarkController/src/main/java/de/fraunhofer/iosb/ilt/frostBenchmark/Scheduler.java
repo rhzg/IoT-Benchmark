@@ -87,7 +87,7 @@ public class Scheduler {
 			Long duration = run.get("duration").asLong();
 			Long seqId = run.get("seq").asLong();
 			System.out.println("run experiment " + seqId + " for " + duration + " msec");
-			System.out.println("with settings: " + run.toString());
+			System.out.println("using settings: " + run.toString());
 
 			sendCommands(run, STATUS.RUNNING);
 			Thread.sleep(duration);
