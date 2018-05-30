@@ -69,7 +69,7 @@ public class SensorScheduler {
 		if (settings.sensors != haveCount) {
 			if (settings.sensors > haveCount) {
 				int toAdd = settings.sensors - haveCount;
-				LOGGER.info("Setting up {} new sensors.", toAdd);
+				LOGGER.info("Setting up {} new sensors...", toAdd);
 				for (int i = haveCount; i < settings.sensors; i++) {
 					String name = "Benchmark." + i;
 					DataSource sensor = new DataSource(BenchData.service).intialize(name);
@@ -78,12 +78,13 @@ public class SensorScheduler {
 			}
 			if (settings.sensors < haveCount) {
 				int toRemove = haveCount - settings.sensors;
-				LOGGER.info("Taking down {} sensors.", toRemove);
+				LOGGER.info("Taking down {} sensors...", toRemove);
 				while (dsList.size() > settings.sensors) {
 					DataSource ds = dsList.remove(dsList.size() - 1);
 					ds.cancel();
 				}
 			}
+                        LOGGER.info("Done.");
 		}
 
 		LOGGER.trace("Benchmark initialized");
