@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export repeats=10
-export threads=15
+export threads=5
 export loops=1000
 export db_driver=org.postgresql.Driver
 export db_url=jdbc:postgresql://localhost:5432/sensorthingsTest
@@ -16,4 +16,4 @@ export maxTotal=90
 export maxIdle=10
 export minIdle=5
 
-java -jar target/DbTest-*-SNAPSHOT-jar-with-dependencies.jar
+java -jar DbTest/target/DbTest-*-SNAPSHOT-jar-with-dependencies.jar
