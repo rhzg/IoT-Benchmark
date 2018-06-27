@@ -18,6 +18,14 @@ public class Controller {
 	static final String BENCHMARK = "Benchmark";
 	static final String SESSION = "session";
 
+	static private String getNextWord() {
+		return null;
+	}
+	
+	// make custom scanner?
+	// init with args
+	// consume args while not empty then switch to System.in
+
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 		String cmdInfo = "Available command are <run [msec]>, <stop>, <script file>, <terminate>, <help>, <delete>, <quit>";
@@ -25,7 +33,12 @@ public class Controller {
 		BenchData.initialize();
 		Scheduler scriptScheduler = new Scheduler();
 
-		Thing myThing = BenchData.getBenchmarkThing();
+		if (args.length > 0) {
+			System.out.println("running script " + args[0]);
+			scriptScheduler.readSchedule(args[0]);
+			scriptScheduler.runScript();
+			System.exit(0);
+		}
 
 		System.out.println(cmdInfo);
 		boolean running = true;
@@ -87,7 +100,8 @@ public class Controller {
 				System.out.println("script <file> : Start all benchmark script with file name");
 				System.out.println("stop          : Stop all running processes");
 				System.out.println("terminate     : Terminte all running benchmark processes");
-				System.out.println("init <name> <field> <value> : Send the initialisation parameter <field> with value <value> to the process with name <name>");
+				System.out.println(
+						"init <name> <field> <value> : Send the initialisation parameter <field> with value <value> to the process with name <name>");
 				System.out.println("delete        : Deletes all data in base url - THINK TWICE BEFORE USING THIS!");
 				System.out.println("help          : print this help info");
 				System.out.println("quit          : Quit this Controller terminal");
