@@ -1,0 +1,45 @@
+{
+	"initialize": {
+		"Sensor_1": {
+			"SENSORS": 30,
+			"WORKERS": 10
+		},
+		"Listener_1": {
+			"COVERAGE": 50
+		}
+	},
+	"sequence": [
+		{
+			"seq": 1,
+			"duration": 5000,
+			"Sensor_1": {
+				"PERIOD": 1000
+			}
+		},
+		{
+			"seq": 2,
+			"duration": 5000,
+			"Sensor_1": {
+				"PERIOD": 750
+			},
+			"Listener_1": {
+				"COVERAGE": 100
+			}
+		},
+		{
+			"seq": 3,
+			"duration": 5000,
+			"Sensor_1": {
+				"PERIOD": 500
+			}
+		}
+	]
+}
+
+
+
+
+
+
+
+

@@ -1,0 +1,26 @@
+------------------------------------------
+Start FROST Server: use default parent repo
+
+docker-compose up
+
+
+------------------------------------------
+------------------------------ start image
+ 
+docker run -d fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
+docker run fraunhoferiosb/streamprocessor:0.0.1-SNAPSHOT
+docker run -i fraunhoferiosb/benchmarkcontroller:0.0.1-SNAPSHOT
+
+
+------------------------------------------
+-------------------------------- Scale up:
+
+docker-compose up --scale sensorcluster=2
+docker-compose up --scale sensorcluster=10 --scale subscriberCluster=5
+
+
+------------------------------------------
+------------------------- build dockerfile
+
+mvn dockerfile:build -pl StreamProcessor,SubscriberCluster,SensorCluster,BenchmarkController
+
