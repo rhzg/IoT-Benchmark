@@ -175,7 +175,7 @@ public class RunTests {
 		LOGGER.info("Setting up BasicDataSource.");
 		Class.forName(getEnv(TAG_DB_DRIVER, DEF_DB_DRIVER));
 		return new ConnectionSourceBasicDataSource(
-				getEnv(TAG_DB_URL, "jdbc:postgresql://localhost:5432/sensorthingsTest"),
+				getEnv(TAG_DB_URL, DEF_DB_URL),
 				getEnv(TAG_DB_USERNAME, "sensorthings"),
 				getEnv(TAG_DB_PASSWORD, "ChangeMe"));
 	}
