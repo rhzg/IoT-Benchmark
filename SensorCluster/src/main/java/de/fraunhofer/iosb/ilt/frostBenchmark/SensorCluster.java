@@ -35,6 +35,7 @@ public class SensorCluster extends MqttHelper implements TimeoutListener {
 	public void init(BenchProperties benchProperties) throws Throwable {
 		timeoutWatcher.addTimeoutListener(this);
 		scheduler = new SensorScheduler();
+		scheduler.setOutputPeriod(BenchData.outputPeriod);
 		scheduler.initWorkLoad(null);
 
 		Thing benchmarkThing = BenchData.getBenchmarkThing();

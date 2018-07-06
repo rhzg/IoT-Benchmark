@@ -17,7 +17,14 @@ public class SensorScheduler {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SensorScheduler.class);
 
-	private ScheduledExecutorService scheduler;
+	private ScheduledExecutorService sensorScheduler;
+	private ScheduledExecutorService outputScheduler;
+	private ScheduledFuture<?> outputTask;
+
+	/**
+	 * How many seconds between stats outputs.
+	 */
+	private int outputPeriod = 1;
 
 	private List<DataSource> dsList = new ArrayList<>();
 	private long startTime = 0;
@@ -32,7 +39,8 @@ public class SensorScheduler {
 	public SensorScheduler() {
 		BenchData.initialize();
 		settings = new BenchProperties().readFromEnvironment();
-		scheduler = Executors.newScheduledThreadPool(settings.workers);
+		sensorScheduler = Executors.newScheduledThreadPool(settings.workers);
+		outputScheduler = Executors.newSingleThreadScheduledExecutor();
 	}
 
 	private int logUpdates(String name, int oldVal, int newVal) {
@@ -62,18 +70,21 @@ public class SensorScheduler {
 
 		if (oldWorkerCount != settings.workers) {
 			cleanupScheduler();
-			scheduler = Executors.newScheduledThreadPool(settings.workers);
+			sensorScheduler = Executors.newScheduledThreadPool(settings.workers);
 		}
 
 		int haveCount = dsList.size();
 		if (settings.sensors != haveCount) {
 			if (settings.sensors > haveCount) {
 				int toAdd = settings.sensors - haveCount;
-				LOGGER.info("Setting up {} new sensors...", toAdd);
+				LOGGER.info("Setting up {} sensors...", toAdd);
 				for (int i = haveCount; i < settings.sensors; i++) {
 					String name = "Benchmark." + i;
 					DataSource sensor = new DataSource(BenchData.service).intialize(name);
 					dsList.add(sensor);
+					if ((i - haveCount) % 100 == 0) {
+						LOGGER.info("... {}", i - haveCount);
+					}
 				}
 			}
 			if (settings.sensors < haveCount) {
@@ -84,7 +95,7 @@ public class SensorScheduler {
 					ds.cancel();
 				}
 			}
-                        LOGGER.info("Done.");
+			LOGGER.info("Done.");
 		}
 
 		LOGGER.trace("Benchmark initialized");
@@ -108,14 +119,23 @@ public class SensorScheduler {
 		double delayPerSensor = ((double) settings.period) / settings.sensors;
 		double currentDelay = 0;
 		for (DataSource sensor : dsList) {
-			ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(sensor, (long) currentDelay, settings.period, TimeUnit.MILLISECONDS);
+			ScheduledFuture<?> handle = sensorScheduler.scheduleAtFixedRate(sensor, (long) currentDelay, settings.period, TimeUnit.MILLISECONDS);
 			sensor.setSchedulerHandle(handle);
 			currentDelay += delayPerSensor;
+		}
+
+		if (outputTask == null) {
+			outputTask = outputScheduler.scheduleAtFixedRate(this::printStats, outputPeriod, outputPeriod, TimeUnit.SECONDS);
 		}
 	}
 
 	public synchronized void stopWorkLoad() {
 		LOGGER.trace("Benchmark finishing");
+
+		if (outputTask != null) {
+			outputTask.cancel(true);
+			outputTask = null;
+		}
 
 		for (DataSource sensor : dsList) {
 			sensor.cancel();
@@ -127,29 +147,42 @@ public class SensorScheduler {
 			entries += sensor.reset();
 		}
 
-		Datastream ds = BenchData.getDatastream("SensorCluster");
 		double rate = 1000.0 * entries / (stopTime - startTime);
+		LOGGER.info("-=> {} entries created per sec", String.format("%.2f", rate));
+
+		Datastream ds = BenchData.getDatastream("SensorCluster");
 		try {
 			BenchData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
 			LOGGER.error("Failed.", exc);
 		}
 
-		LOGGER.info("-=> {} entries created per sec", String.format("%.2f", rate));
 		LOGGER.info("Benchmark finished");
 		running = false;
 	}
 
+	public void printStats() {
+		long curTime = System.currentTimeMillis();
+		int entries = 0;
+		for (DataSource sensor : dsList) {
+			entries += sensor.getCreatedObsCount();
+		}
+
+		double rate = 1000.0 * entries / (curTime - startTime);
+		LOGGER.info("-=> {}/s", String.format("%.2f", rate));
+	}
+
 	private void cleanupScheduler() {
-		scheduler.shutdown();
+		outputScheduler.shutdown();
+		sensorScheduler.shutdown();
 		boolean allOk = true;
 		try {
-			allOk = scheduler.awaitTermination(2, TimeUnit.SECONDS);
+			allOk = sensorScheduler.awaitTermination(2, TimeUnit.SECONDS);
 		} catch (InterruptedException ex) {
 			LOGGER.trace("Woken up, wait done.", ex);
 		}
 		if (!allOk) {
-			scheduler.shutdownNow();
+			sensorScheduler.shutdownNow();
 		}
 	}
 
@@ -157,4 +190,23 @@ public class SensorScheduler {
 		stopWorkLoad();
 		cleanupScheduler();
 	}
+
+	/**
+	 * How many seconds between stats outputs.
+	 *
+	 * @return the outputPeriod
+	 */
+	public int getOutputPeriod() {
+		return outputPeriod;
+	}
+
+	/**
+	 * How many seconds between stats outputs.
+	 *
+	 * @param outputRate the outputPeriod to set
+	 */
+	public void setOutputPeriod(int outputRate) {
+		this.outputPeriod = outputRate;
+	}
+
 }

@@ -16,6 +16,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.geojson.Point;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +26,9 @@ public class BenchData {
 
 	public static final String TAG_NAME = "NAME";
 	public static final String DFLT_NAME = "properties";
+
+	public static final String TAG_OUTPUT_PERIOD = "outputPeriod";
+	public static final int DFLT_OUTPUT_PERIOD = 5;
 
 	public static final int DFLT_PORT = 1883;
 
@@ -38,6 +44,7 @@ public class BenchData {
 	public static SensorThingsService service = null;
 	public static String sessionId;
 	public static String broker;
+	public static int outputPeriod;
 
 	private static Thing sessionThing = null;
 	private static final Object lock = new Object();
@@ -49,6 +56,7 @@ public class BenchData {
 
 		name = getEnv(TAG_NAME, DFLT_NAME);
 		sessionId = getEnv(BenchData.SESSION, "0815").trim();
+		outputPeriod = getEnv(TAG_OUTPUT_PERIOD, DFLT_OUTPUT_PERIOD);
 
 		broker = getEnv(BROKER, "localhost").trim();
 		if (!broker.contains(":")) {

@@ -77,6 +77,10 @@ public class DataSource implements Runnable {
 		schedulerHandle = null;
 	}
 
+	public int getCreatedObsCount() {
+		return createdObsCount;
+	}
+
 	public ScheduledFuture<?> getSchedulerHandle() {
 		return schedulerHandle;
 	}
