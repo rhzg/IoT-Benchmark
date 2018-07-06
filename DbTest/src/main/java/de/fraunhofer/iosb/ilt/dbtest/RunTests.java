@@ -83,7 +83,7 @@ public class RunTests {
 		}
 
 		private int getIntInRange(int start, int end, int nr) {
-			int delta = end - start;
+			int delta = Math.max(1, end - start);
 			int i = start + nr;
 			while (i > end) {
 				i -= delta;
