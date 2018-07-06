@@ -16,7 +16,6 @@ public class SensorCluster extends MqttHelper implements TimeoutListener {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SensorCluster.class);
 	public static final int QOS = 2;
-	public static final int PORT = 1883;
 
 	private SensorScheduler scheduler;
 	private ObjectMapper parser;
@@ -146,7 +145,6 @@ public class SensorCluster extends MqttHelper implements TimeoutListener {
 
 		String clientId = "BechmarkSensorCluster-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
-		String protocol = "tcp://";
 
 		BenchData.initialize();
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
@@ -160,9 +158,8 @@ public class SensorCluster extends MqttHelper implements TimeoutListener {
 
 		try {
 			// Create an instance of the Sample client wrapper
-			LOGGER.debug("using mqtt broker: " + BenchData.broker);
-			String url = protocol + BenchData.broker + ":" + PORT;
-			SensorCluster sensors = new SensorCluster(BenchData.name, url, clientId, cleanSession);
+			LOGGER.debug("using mqtt broker: {}", BenchData.broker);
+			SensorCluster sensors = new SensorCluster(BenchData.name, BenchData.broker, clientId, cleanSession);
 			sensors.init(benchProperties);
 		} catch (MqttException me) {
 			LOGGER.error("MQTT exception", me);

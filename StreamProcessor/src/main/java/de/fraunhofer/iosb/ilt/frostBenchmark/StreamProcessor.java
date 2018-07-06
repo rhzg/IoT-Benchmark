@@ -21,7 +21,6 @@ public class StreamProcessor extends MqttHelper {
 
 	private static long startTime = 0;
 	public static int qos = 2;
-	private static int port = 1883;
 	private ObjectMapper parser;
 	/**
 	 * The name to use when reading properties.
@@ -40,7 +39,6 @@ public class StreamProcessor extends MqttHelper {
 		String protocol = "tcp://";
 
 		BenchData.initialize();
-		String url = protocol + BenchData.broker + ":" + port;
 		Thing benchmarkThing = BenchData.getBenchmarkThing();
 
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
@@ -52,7 +50,7 @@ public class StreamProcessor extends MqttHelper {
 			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
 			for (Datastream dataStream : dataStreams) {
 				if (random.nextInt(100) < benchProperties.coverage) {
-					ProcessorWorker processor = new ProcessorWorker(url, clientId + "-" + dataStream.getId().toString(),
+					ProcessorWorker processor = new ProcessorWorker(BenchData.broker, clientId + "-" + dataStream.getId().toString(),
 							cleanSession);
 					processor.setDataStreamTopic("v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations");
 					new Thread(processor).start();
@@ -64,7 +62,7 @@ public class StreamProcessor extends MqttHelper {
 
 			// subscribeAndWait for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
-			StreamProcessor processor = new StreamProcessor(BenchData.name, url, clientId, cleanSession);
+			StreamProcessor processor = new StreamProcessor(BenchData.name, BenchData.broker, clientId, cleanSession);
 			processor.subscribeAndWait(topic, qos);
 
 		} catch (MqttException me) {

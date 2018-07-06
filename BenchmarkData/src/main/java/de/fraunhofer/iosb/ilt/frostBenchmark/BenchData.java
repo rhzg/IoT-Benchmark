@@ -24,6 +24,8 @@ public class BenchData {
 	public static final String TAG_NAME = "NAME";
 	public static final String DFLT_NAME = "properties";
 
+	public static final int DFLT_PORT = 1883;
+
 	public static final String BENCHMARK = "Benchmark";
 	public static final String SESSION = "SESSION";
 	public static final String BASE_URL = "BASE_URL";
@@ -49,8 +51,8 @@ public class BenchData {
 		sessionId = getEnv(BenchData.SESSION, "0815").trim();
 
 		broker = getEnv(BROKER, "localhost").trim();
-		if (broker == null) {
-			broker = "localhost";
+		if (!broker.contains(":")) {
+			broker = "tcp://" + BenchData.broker + ":" + DFLT_PORT;
 		}
 
 		try {

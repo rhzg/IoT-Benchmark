@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 public class SubscriberCluster extends MqttHelper {
 
 	public static final int QOS = 2;
-	public static int port = 1883;
 	private static final boolean CLEAN_SESSION = true;
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SubscriberCluster.class);
@@ -135,16 +134,14 @@ public class SubscriberCluster extends MqttHelper {
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
 		String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
-		String protocol = "tcp://";
 
 		BenchData.initialize();
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
-		String url = protocol + BenchData.broker + ":" + port;
 
 		LOGGER.info("Starting '{}' with a coverage of {}.", BenchData.name, benchProperties.coverage);
 
 		try {
-			SubscriberCluster cluster = new SubscriberCluster(BenchData.name, url, clientId, CLEAN_SESSION);
+			SubscriberCluster cluster = new SubscriberCluster(BenchData.name, BenchData.broker, clientId, CLEAN_SESSION);
 			cluster.init();
 		} catch (MqttException me) {
 			LOGGER.error("MQTT exception", me);
