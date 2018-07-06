@@ -57,6 +57,16 @@ public class BenchData {
 			LOGGER.debug("Creating SensorThingsService");
 			baseUri = new URL(baseUriStr);
 			service = new SensorThingsService(baseUri);
+
+			PoolingHttpClientConnectionManager conManager = new PoolingHttpClientConnectionManager();
+			conManager.setMaxTotal(500);
+			conManager.setDefaultMaxPerRoute(200);
+			CloseableHttpClient httpClient = HttpClients.custom()
+					.useSystemProperties()
+					.setConnectionManager(conManager)
+					.build();
+			service.setClient(httpClient);
+
 			LOGGER.debug("Creating SensorThingsService done");
 		} catch (MalformedURLException | URISyntaxException e) {
 			LOGGER.error("Incorrect url: {}", baseUriStr);
