@@ -11,15 +11,13 @@ export BROKER=localhost
 # Benchmark Session Identifier within Benchmark thing to be used
 export SESSION=0815
 
-# Percentage of Datastreams covered by mqtt subsribers
-export COVERAGE=50
-
 # number of parallel Threads
 export WORKERS=10
 
+# The number of sensors to simulate
 export SENSORS=20
 
 # msec delay between observations
 export PERIOD=100
 
-java -jar ./SensorCluster/target/SensorCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+java -jar ./SensorCluster/target/SensorCluster-*-SNAPSHOT-jar-with-dependencies.jar

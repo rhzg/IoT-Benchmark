@@ -3,7 +3,6 @@ package de.fraunhofer.iosb.ilt.frostBenchmark;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.dao.BaseDao;
 import de.fraunhofer.iosb.ilt.sta.model.Entity;
-import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 import java.io.IOException;
@@ -21,11 +20,10 @@ public class Controller {
 	static private String getNextWord() {
 		return null;
 	}
-	
+
 	// make custom scanner?
 	// init with args
 	// consume args while not empty then switch to System.in
-
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 		String cmdInfo = "Available command are <run [msec]>, <stop>, <script file>, <terminate>, <help>, <delete>, <quit>";
@@ -60,7 +58,7 @@ public class Controller {
 				scriptScheduler.sendCommands(null, BenchProperties.STATUS.FINISHED);
 			} else if (cmd[0].equalsIgnoreCase("delete")) {
 				// processing the DELETE command --------------------------
-				System.out.println("All data in " + BenchData.baseUri.toString()
+				System.out.println("*All* data in " + BenchData.baseUri.toString()
 						+ " will be deleted. After that you need to restart");
 				System.out.println("Are you sure you want to do this? Type 'yes'");
 				String answer = sc.nextLine();
