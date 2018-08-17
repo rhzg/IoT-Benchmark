@@ -19,14 +19,6 @@ build-master:
   stage: build
   script:
     - mvn $MAVEN_CLI_OPTS install
-    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl StreamProcessor -Ddocker-image-name="$CI_REGISTRY_IMAGE/streamprocessor"
-    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl SubscriberCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE/subscribercluster"
-    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl SensorCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE/sensorcluster"
-    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl BenchmarkController -Ddocker-image-name="$CI_REGISTRY_IMAGE/benchmarkcontroller"
-
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl StreamProcessor -pl StreamProcessor -Ddocker-image-name="$CI_REGISTRY_IMAGE/streamprocessor"
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl SubscriberCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE/subscribercluster"
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl SensorCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE/sensorcluster"
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl BenchmarkController -Ddocker-image-name="$CI_REGISTRY_IMAGE/benchmarkcontroller"
+    - mvn $MAVEN_CLI_OPTS dockerfile:build dockerfile:push -pl StreamProcessor,SubscriberCluster,SensorCluster,BenchmarkController -Ddocker-registry="$CI_REGISTRY_IMAGE"
   tags:
     - ILT

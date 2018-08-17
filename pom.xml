@@ -16,6 +16,9 @@
 		<module>MqttHelper</module>
 		<module>DbTest</module>
 	</modules>
+	<properties>
+		<docker-registry>fraunhoferiosb</docker-registry>
+	</properties>
 
 	<repositories>
 		<repository>
