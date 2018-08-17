@@ -1,0 +1,31 @@
+image: maven:latest
+
+services:
+  - docker:dind
+
+variables:
+  MAVEN_CLI_OPTS: "--batch-mode -Ddockerfile.username=gitlab-ci-token -Ddockerfile.password=$CI_BUILD_TOKEN"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+stages:
+  - build
+
+before_script:
+  - curl -sSL https://get.docker.com/ | sh
+  - apt-get update && apt-get install --no-install-recommends -y openjfx && apt-get clean && rm -f /var/lib/apt/lists/*_dists_*
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+build-master:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS install
+    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl StreamProcessor -Ddocker-image-name="$CI_REGISTRY_IMAGE-streamprocessor"
+    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl SubscriberCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE-subscribercluster"
+    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl SensorCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE-sensorcluster"
+    - mvn $MAVEN_CLI_OPTS dockerfile:build -pl BenchmarkController -Ddocker-image-name="$CI_REGISTRY_IMAGE-benchamrkcontroller"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-streamprocessor"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-subscribercluster"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-sensorcluster"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-benchamrkcontroller"
+  tags:
+    - ILT
