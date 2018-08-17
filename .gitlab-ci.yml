@@ -23,9 +23,9 @@ build-master:
     - mvn $MAVEN_CLI_OPTS dockerfile:build -pl SubscriberCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE-subscribercluster"
     - mvn $MAVEN_CLI_OPTS dockerfile:build -pl SensorCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE-sensorcluster"
     - mvn $MAVEN_CLI_OPTS dockerfile:build -pl BenchmarkController -Ddocker-image-name="$CI_REGISTRY_IMAGE-benchamrkcontroller"
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-streamprocessor"
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-subscribercluster"
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-sensorcluster"
-    - mvn $MAVEN_CLI_OPTS dockerfile:push -Ddocker-image-name="$CI_REGISTRY_IMAGE-benchamrkcontroller"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl StreamProcessor -pl StreamProcessor -Ddocker-image-name="$CI_REGISTRY_IMAGE-streamprocessor"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl SubscriberCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE-subscribercluster"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl SensorCluster -Ddocker-image-name="$CI_REGISTRY_IMAGE-sensorcluster"
+    - mvn $MAVEN_CLI_OPTS dockerfile:push -pl BenchmarkController -Ddocker-image-name="$CI_REGISTRY_IMAGE-benchamrkcontroller"
   tags:
     - ILT
