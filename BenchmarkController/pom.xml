@@ -56,7 +56,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<repository>fraunhoferiosb/controller</repository>
+					<repository>${docker-image-name}</repository>
 					<tag>${project.version}</tag>
 					<buildArgs>
 						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
