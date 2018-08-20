@@ -96,14 +96,24 @@ public class Scheduler {
 		System.out.println("finished");
 	}
 
+	public void sendCommands(STATUS status) throws ServiceFailureException {
+		sendCommands(new HashMap<>(), status);
+	}
+
 	public void sendCommands(JsonNode properties, STATUS status) throws ServiceFailureException {
-		Thing sessionThing = BenchData.getBenchmarkThing();
 		Map<String, Object> propertiesMap;
 		if (properties == null) {
 			propertiesMap = new HashMap<>();
 		} else {
 			propertiesMap = mapper.convertValue(properties, TYPE_REF_MAP_STRING_OBJECT);
 		}
+		sendCommands(propertiesMap, status);
+	}
+
+	public void sendCommands(Map<String, Object> propertiesMap, STATUS status) throws ServiceFailureException {
+		Thing sessionThing = BenchData.getBenchmarkThing();
+		propertiesMap.put(BenchData.TAG_SESSION, BenchData.sessionId);
+		propertiesMap.put(BenchData.TAG_TYPE, BenchData.VALUE_TYPE_CONTROL);
 		propertiesMap.put(BenchProperties.TAG_STATUS, status);
 		sessionThing.setProperties(propertiesMap);
 		BenchData.service.update(sessionThing);

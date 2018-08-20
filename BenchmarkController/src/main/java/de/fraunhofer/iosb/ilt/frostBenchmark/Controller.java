@@ -7,6 +7,8 @@ import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import org.slf4j.LoggerFactory;
 
@@ -26,9 +28,10 @@ public class Controller {
 	// consume args while not empty then switch to System.in
 	public static void main(String[] args)
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
-		String cmdInfo = "Available command are <run [msec]>, <stop>, <script file>, <terminate>, <help>, <delete>, <quit>";
+		String cmdInfo = "Available command are <run [msec]>, <stop>, <init>, <script file>, <terminate>, <help>, <delete>, <quit>";
 
 		BenchData.initialize();
+		BenchData.getBenchmarkThing();
 		Scheduler scriptScheduler = new Scheduler();
 
 		if (args.length > 0) {
@@ -46,16 +49,21 @@ public class Controller {
 			String[] cmd = sc.nextLine().split(" ");
 			if (cmd[0].equalsIgnoreCase("run")) {
 				// processing the RUN command -------------------------------
-				scriptScheduler.sendCommands(null, BenchProperties.STATUS.RUNNING);
+				int duration = 0;
 				if (cmd.length > 1) {
-					int ms = Integer.parseInt(cmd[1]);
-					System.out.println("running for " + ms + " msec");
-					Thread.sleep(ms);
-					scriptScheduler.sendCommands(null, BenchProperties.STATUS.FINISHED);
+					duration = Integer.parseInt(cmd[1]);
+				}
+				Map<String, Object> properties = new HashMap<>();
+				properties.put(BenchData.TAG_DURATION, duration);
+				scriptScheduler.sendCommands(properties, BenchProperties.STATUS.RUNNING);
+				if (duration > 0) {
+					System.out.println("running for " + duration + " msec");
+					Thread.sleep(duration);
+					scriptScheduler.sendCommands(BenchProperties.STATUS.FINISHED);
 				}
 			} else if (cmd[0].equalsIgnoreCase("stop")) {
 				// processing the STOP command ----------------------------
-				scriptScheduler.sendCommands(null, BenchProperties.STATUS.FINISHED);
+				scriptScheduler.sendCommands(BenchProperties.STATUS.FINISHED);
 			} else if (cmd[0].equalsIgnoreCase("delete")) {
 				// processing the DELETE command --------------------------
 				System.out.println("*All* data in " + BenchData.baseUri.toString()
@@ -88,7 +96,7 @@ public class Controller {
 				}
 			} else if (cmd[0].equalsIgnoreCase("terminate") || cmd[0].equalsIgnoreCase("t")) {
 				// processing the TERMINATE command ------------------------
-				scriptScheduler.sendCommands(null, BenchProperties.STATUS.TERMINATE);
+				scriptScheduler.sendCommands(BenchProperties.STATUS.TERMINATE);
 				System.out.println("Terminate message sent");
 			} else if (cmd[0].equalsIgnoreCase("help") || cmd[0].equalsIgnoreCase("h")) {
 				// processing the HELP command ---------------------------------------------
