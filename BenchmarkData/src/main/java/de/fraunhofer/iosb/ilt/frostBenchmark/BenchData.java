@@ -7,7 +7,6 @@ import de.fraunhofer.iosb.ilt.sta.model.Location;
 import de.fraunhofer.iosb.ilt.sta.model.ObservedProperty;
 import de.fraunhofer.iosb.ilt.sta.model.Sensor;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
-import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import de.fraunhofer.iosb.ilt.sta.model.ext.UnitOfMeasurement;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
 import java.net.MalformedURLException;
@@ -32,8 +31,14 @@ public class BenchData {
 
 	public static final int DFLT_PORT = 1883;
 
+	public static final String TAG_SESSION = "SESSION";
+	public static final String TAG_DURATION = "duration";
+	public static final String TAG_TYPE = "type";
+	public static final String VALUE_TYPE_CONTROL = "control";
+	public static final String VALUE_TYPE_SENSOR = "sensor";
+
 	public static final String BENCHMARK = "Benchmark";
-	public static final String SESSION = "SESSION";
+	public static final String SESSION = TAG_SESSION;
 	public static final String BASE_URL = "BASE_URL";
 	public static final String BROKER = "BROKER";
 	public static final String PROXYHOST = "proxyhost";
@@ -124,20 +129,17 @@ public class BenchData {
 			Thing myThing = null;
 
 			// search for the session thing
-			EntityList<Thing> things;
 			try {
-				things = service.things().query().select("name", "id", "description").list();
-				for (Thing thing : things) {
-					LOGGER.trace(thing.toString());
-					if (sessionId.equalsIgnoreCase(thing.getDescription())) { // found it
-						myThing = service.things().find(thing.getId());
-						break;
-					}
-				}
+				myThing = service.things().query()
+						.select("name", "id", "description")
+						.filter("properties/" + TAG_TYPE + " eq '" + VALUE_TYPE_CONTROL + "' and properties/" + SESSION + " eq '" + sessionId + "'")
+						.first();
 				if (myThing == null) {
+					LOGGER.info("Creating main benchmark Thing");
 					myThing = new Thing(BENCHMARK, sessionId);
 					Map<String, Object> thingProperties = new HashMap<>();
 					thingProperties.put(BenchProperties.TAG_STATUS, BenchProperties.STATUS.FINISHED);
+					thingProperties.put(TAG_TYPE, VALUE_TYPE_CONTROL);
 					thingProperties.put(SESSION, sessionId);
 					myThing.setProperties(thingProperties);
 					service.create(myThing);
@@ -168,7 +170,9 @@ public class BenchData {
 		LOGGER.debug("getSensor: " + name);
 
 		try {
-			dataStream = getBenchmarkThing().datastreams().query().filter("name eq '" + Utils.escapeForStringConstant(name) + "'").first();
+			dataStream = service.datastreams().query()
+					.filter("name eq '" + Utils.escapeForStringConstant(name) + "'")
+					.first();
 
 			if (dataStream == null) {
 				dataStream = createDatastream(name);
@@ -200,11 +204,22 @@ public class BenchData {
 		ObservedProperty obsProp1 = new ObservedProperty(name, new URI("http://ucom.org/temperature"), "observation rate");
 		service.create(obsProp1);
 
+		Thing thing = new Thing(name, "Benchmark Thing");
+		Map<String, Object> thingProps = new HashMap<>();
+		thingProps.put(TAG_TYPE, VALUE_TYPE_SENSOR);
+		thingProps.put(SESSION, sessionId);
+
+		Location location = new Location(name, "The location of a benchmark thing.", "application/geo+json", new Point(8, 52));
+		thing.getLocations().add(location);
+
 		dataStream = new Datastream(name, "Benchmark Random Stream", name,
 				new UnitOfMeasurement("observation rate", "observations per sec", ""));
-		dataStream.setThing(sessionThing);
+		dataStream.setThing(thing);
 		dataStream.setSensor(sensor);
 		dataStream.setObservedProperty(obsProp1);
+		Map<String, Object> dsProps = new HashMap<>();
+		dsProps.put(SESSION, sessionId);
+		dataStream.setProperties(dsProps);
 		service.create(dataStream);
 
 		return dataStream;
