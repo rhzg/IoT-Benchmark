@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>de.fraunhofer.iosb.ilt</groupId>
 			<artifactId>FROST-Client</artifactId>
-			<version>0.16</version>
+			<version>${frost.client.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

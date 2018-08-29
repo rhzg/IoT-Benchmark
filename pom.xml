@@ -18,6 +18,7 @@
 	</modules>
 	<properties>
 		<docker-registry>fraunhoferiosb</docker-registry>
+        <frost.client.version>0.18</frost.client.version>
 	</properties>
 
 	<repositories>
