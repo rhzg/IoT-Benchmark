@@ -3,6 +3,7 @@ package de.fraunhofer.iosb.ilt.frostBenchmark;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iosb.ilt.frostBenchmark.BenchProperties.STATUS;
+import static de.fraunhofer.iosb.ilt.frostBenchmark.BenchProperties.TAG_SESSION;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
@@ -10,6 +11,7 @@ import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.Random;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -47,8 +49,15 @@ public class StreamProcessor extends MqttHelper {
 			// create processors for Datastream according to coverage
 			Random random = new Random();
 			int nbProcessors = 0;
-			EntityList<Datastream> dataStreams = benchmarkThing.datastreams().query().list();
-			for (Datastream dataStream : dataStreams) {
+			EntityList<Datastream> datastreams = BenchData.service.datastreams().query()
+					.filter("properties/" + TAG_SESSION + " eq '" + BenchData.sessionId + "'")
+					.select("@iot.id")
+					.top(10000)
+					.list();
+			int dsCount = 0;
+			for (Iterator<Datastream> it = datastreams.fullIterator(); it.hasNext();) {
+				Datastream dataStream = it.next();
+				dsCount++;
 				if (random.nextInt(100) < benchProperties.coverage) {
 					ProcessorWorker processor = new ProcessorWorker(BenchData.broker, clientId + "-" + dataStream.getId().toString(),
 							cleanSession);
@@ -57,8 +66,8 @@ public class StreamProcessor extends MqttHelper {
 					nbProcessors++;
 				}
 			}
-			LOGGER.info(nbProcessors + " created out of " + dataStreams.size() + " Datastreams (coverage="
-					+ 100 * nbProcessors / dataStreams.size() + "[" + benchProperties.coverage + "]");
+			LOGGER.info(nbProcessors + " created out of " + dsCount + " Datastreams (coverage="
+					+ 100 * nbProcessors / dsCount + "[" + benchProperties.coverage + "]");
 
 			// subscribeAndWait for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";

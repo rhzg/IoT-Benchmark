@@ -1,10 +1,12 @@
 package de.fraunhofer.iosb.ilt.frostBenchmark;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import static de.fraunhofer.iosb.ilt.frostBenchmark.BenchProperties.TAG_SESSION;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
-import de.fraunhofer.iosb.ilt.sta.model.Thing;
+import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -26,6 +28,9 @@ public class ProcessorScheduler {
 	private String mqttUrl;
 	private boolean cleanSession = true;
 
+	private List<Datastream> allDatastreams = new ArrayList<>();
+	private List<Datastream> unusedDatastreams = new ArrayList<>();
+
 	private List<ProcessorWorker> workers = new ArrayList<>();
 	private Random random = new Random();
 
@@ -45,17 +50,30 @@ public class ProcessorScheduler {
 		}
 	}
 
-	private void createProcessors() throws MqttException {
-		Thing benchmarkThing = BenchData.getBenchmarkThing();
-		try {
-			List<Datastream> datastreams = benchmarkThing
-					.datastreams()
-					.query()
+	private void fetchDatastreams() throws ServiceFailureException {
+		if (allDatastreams.isEmpty()) {
+			EntityList<Datastream> datastreams = BenchData.service.datastreams().query()
+					.filter("properties/" + TAG_SESSION + " eq '" + BenchData.sessionId + "'")
 					.select("@iot.id")
 					.top(10000)
-					.list()
-					.toList();
-			int datastreamCount = datastreams.size();
+					.list();
+			for (Iterator<Datastream> it = datastreams.fullIterator(); it.hasNext();) {
+				Datastream ds = it.next();
+				allDatastreams.add(ds);
+			}
+		}
+	}
+
+	private void refillDatastreams(List<Datastream> usedDatastreams) {
+		usedDatastreams.addAll(allDatastreams);
+	}
+
+	private void createProcessors() throws MqttException {
+		BenchData.getBenchmarkThing();
+		try {
+			fetchDatastreams();
+
+			int datastreamCount = allDatastreams.size();
 			int wantedCoverage = benchProperties.coverage;
 			int wantedWorkers = wantedCoverage * datastreamCount / 100;
 			int haveWorkers = workers.size();
@@ -66,7 +84,7 @@ public class ProcessorScheduler {
 				LOGGER.info("Adding {} workers.", wantedWorkers - haveWorkers);
 				String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
 				while (wantedWorkers > haveWorkers) {
-					addProcessor(datastreams, clientId);
+					addProcessor(unusedDatastreams, clientId);
 					haveWorkers++;
 				}
 			}
@@ -89,8 +107,7 @@ public class ProcessorScheduler {
 
 	private void addProcessor(List<Datastream> datastreams, String clientId) throws MqttException {
 		if (datastreams.isEmpty()) {
-			LOGGER.error("No more datastreams to generate workers for.");
-			return;
+			refillDatastreams(datastreams);
 		}
 		int nr = random.nextInt(datastreams.size());
 		Datastream ds = datastreams.remove(nr);
