@@ -1,7 +1,5 @@
 package de.fraunhofer.iosb.ilt.frostBenchmark;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
@@ -61,10 +59,6 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 		try {
 			entity = mapper.readValue(message.getPayload(), Observation.class);
 			processObservation(entity);
-		} catch (JsonParseException e) {
-			LOGGER.error("Exception: ", e);
-		} catch (JsonMappingException e) {
-			LOGGER.error("Exception: ", e);
 		} catch (IOException e) {
 			LOGGER.error("Exception: ", e);
 		}

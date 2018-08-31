@@ -58,6 +58,7 @@ public class BenchData {
 
 	public static void initialize() {
 		String baseUriStr = getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
+		LOGGER.info("Using SensorThings Service at {}", baseUriStr);
 
 		name = getEnv(TAG_NAME, DFLT_NAME);
 		sessionId = getEnv(BenchData.SESSION, "0815").trim();
@@ -84,9 +85,7 @@ public class BenchData {
 
 			LOGGER.debug("Creating SensorThingsService done");
 		} catch (MalformedURLException | URISyntaxException e) {
-			LOGGER.error("Incorrect url: {}", baseUriStr);
 			LOGGER.error("Exception:", e);
-			System.exit(1);
 		}
 		LOGGER.trace("Initialized for: {} [SessionId = {}]", baseUriStr, sessionId);
 	}
@@ -122,7 +121,7 @@ public class BenchData {
 			// check if service has been initialized
 			if (service == null) {
 				LOGGER.error("uninitialized service call");
-				System.exit(1);
+				return null;
 			}
 
 			// find the Benchmark Thing to control the load generators
@@ -135,7 +134,6 @@ public class BenchData {
 						.filter("properties/" + TAG_TYPE + " eq '" + VALUE_TYPE_CONTROL + "' and properties/" + SESSION + " eq '" + sessionId + "'")
 						.first();
 				if (myThing == null) {
-					LOGGER.info("Creating main benchmark Thing");
 					myThing = new Thing(BENCHMARK, sessionId);
 					Map<String, Object> thingProperties = new HashMap<>();
 					thingProperties.put(BenchProperties.TAG_STATUS, BenchProperties.STATUS.FINISHED);
@@ -147,10 +145,12 @@ public class BenchData {
 					Location location = new Location("BenchmarkThing", "The location of the benchmark thing.", "application/geo+json", new Point(8, 52));
 					location.getThings().add(myThing.withOnlyId());
 					service.create(location);
+					LOGGER.info("Created main benchmark Thing: {}", myThing);
+				} else {
+					LOGGER.info("Using existing main benchmark Thing: {}", myThing);
 				}
 			} catch (ServiceFailureException e) {
 				LOGGER.error("Exception:", e);
-				System.exit(1);
 			}
 
 			sessionThing = myThing;
@@ -164,25 +164,20 @@ public class BenchData {
 	 *
 	 * @param name
 	 * @return
+	 * @throws de.fraunhofer.iosb.ilt.sta.ServiceFailureException
 	 */
-	public static Datastream getDatastream(String name) {
+	public static Datastream getDatastream(String name) throws ServiceFailureException {
 		Datastream dataStream;
 		LOGGER.debug("getSensor: " + name);
 
-		try {
-			dataStream = service.datastreams().query()
-					.filter("name eq '" + Utils.escapeForStringConstant(name) + "'")
-					.first();
+		dataStream = service.datastreams().query()
+				.filter("name eq '" + Utils.escapeForStringConstant(name) + "' and properties/" + TAG_SESSION + " eq '" + sessionId + "'")
+				.first();
 
-			if (dataStream == null) {
-				dataStream = createDatastream(name);
-			}
-			return dataStream;
-		} catch (ServiceFailureException | URISyntaxException e) {
-			LOGGER.error("Exception!", e);
-			System.exit(1);
+		if (dataStream == null) {
+			dataStream = createDatastream(name);
 		}
-		return null;
+		return dataStream;
 	}
 
 	/**
@@ -192,22 +187,21 @@ public class BenchData {
 	 * @param name
 	 * @return
 	 * @throws ServiceFailureException
-	 * @throws URISyntaxException
 	 */
-	private static Datastream createDatastream(String name) throws ServiceFailureException, URISyntaxException {
+	private static Datastream createDatastream(String name) throws ServiceFailureException {
 		Datastream dataStream;
 
 		Sensor sensor = new Sensor(name, "Sensor for creating benchmark data", "text", "Some metadata.");
 		service.create(sensor);
 		LOGGER.debug("Sensor new id " + String.valueOf(sensor.getId()));
 
-		ObservedProperty obsProp1 = new ObservedProperty(name, new URI("http://ucom.org/temperature"), "observation rate");
+		ObservedProperty obsProp1 = new ObservedProperty(name, URI.create("http://ucom.org/temperature"), "observation rate");
 		service.create(obsProp1);
 
 		Thing thing = new Thing(name, "Benchmark Thing");
 		Map<String, Object> thingProps = new HashMap<>();
 		thingProps.put(TAG_TYPE, VALUE_TYPE_SENSOR);
-		thingProps.put(SESSION, sessionId);
+		thingProps.put(TAG_SESSION, sessionId);
 
 		Location location = new Location(name, "The location of a benchmark thing.", "application/geo+json", new Point(8, 52));
 		thing.getLocations().add(location);

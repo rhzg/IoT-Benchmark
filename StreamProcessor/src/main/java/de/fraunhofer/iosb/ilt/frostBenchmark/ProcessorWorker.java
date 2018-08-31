@@ -1,7 +1,5 @@
 package de.fraunhofer.iosb.ilt.frostBenchmark;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.jackson.ObjectMapperFactory;
@@ -26,8 +24,6 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 
 	public ProcessorWorker(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
-		// TODO Auto-generated constructor stub
-
 	}
 
 	@Override
@@ -57,15 +53,8 @@ public class ProcessorWorker extends MqttHelper implements Runnable {
 		try {
 			entity = mapper.readValue(message.getPayload(), Observation.class);
 			processObservation(entity);
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Failed to read message", e);
 		}
 	}
 

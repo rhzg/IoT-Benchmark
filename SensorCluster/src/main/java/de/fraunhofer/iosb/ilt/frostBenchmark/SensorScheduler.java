@@ -150,8 +150,8 @@ public class SensorScheduler {
 		double rate = 1000.0 * entries / (stopTime - startTime);
 		LOGGER.info("-=> {} entries created per sec", String.format("%.2f", rate));
 
-		Datastream ds = BenchData.getDatastream("SensorCluster");
 		try {
+			Datastream ds = BenchData.getDatastream("SensorCluster");
 			BenchData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
 			LOGGER.error("Failed.", exc);
