@@ -69,7 +69,7 @@ public class SensorScheduler {
 		logUpdates(BenchProperties.TAG_WORKERS, oldWorkerCount, settings.workers);
 
 		if (oldWorkerCount != settings.workers) {
-			cleanupScheduler();
+			cleanupScheduler(false);
 			sensorScheduler = Executors.newScheduledThreadPool(settings.workers);
 		}
 
@@ -172,8 +172,10 @@ public class SensorScheduler {
 		LOGGER.info("-=> {}/s", String.format("%.2f", rate));
 	}
 
-	private void cleanupScheduler() {
-		outputScheduler.shutdown();
+	private void cleanupScheduler(boolean all) {
+		if (all) {
+			outputScheduler.shutdown();
+		}
 		sensorScheduler.shutdown();
 		boolean allOk = true;
 		try {
@@ -188,7 +190,7 @@ public class SensorScheduler {
 
 	public synchronized void terminate() {
 		stopWorkLoad();
-		cleanupScheduler();
+		cleanupScheduler(true);
 	}
 
 	/**
