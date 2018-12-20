@@ -1,0 +1,73 @@
+{
+	"initialize": {
+		"Sensor_1": {
+			"SENSORS": 30,
+			"WORKERS": 10
+		},
+		"Listener_1": {
+			"COVERAGE": 0
+		}
+	},
+	"sequence": [
+		{
+			"seq": 1,
+			"duration": 60000,
+			"Sensor_1": {
+				"PERIOD": 100
+			},
+			"Listener_1": {
+				"COVERAGE": 20
+			}
+		},
+		{
+			"seq": 2,
+			"duration": 60000,
+			"Sensor_1": {
+				"PERIOD": 100
+			},
+			"Listener_1": {
+				"COVERAGE": 40
+			}
+		},
+		{
+			"seq": 3,
+			"duration": 60000,
+			"Sensor_1": {
+				"PERIOD": 80
+			},
+			"Listener_1": {
+				"COVERAGE": 40
+			}
+		},
+		{
+			"seq": 4,
+			"duration": 60000,
+			"Sensor_1": {
+				"PERIOD": 80
+			},
+			"Listener_1": {
+				"COVERAGE": 60
+			}
+		},
+		{
+			"seq": 5,
+			"duration": 60000,
+			"Sensor_1": {
+				"PERIOD": 60
+			},
+			"Listener_1": {
+				"COVERAGE": 60
+			}
+		},
+		{
+			"seq": 6,
+			"duration": 60000,
+			"Sensor_1": {
+				"PERIOD": 60
+			},
+			"Listener_1": {
+				"COVERAGE": 80
+			}
+		}
+	]
+}

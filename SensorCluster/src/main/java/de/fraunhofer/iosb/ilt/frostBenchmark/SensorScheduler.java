@@ -56,16 +56,27 @@ public class SensorScheduler {
 		}
 	}
 
+	private void sendRateObservation (double rate) {
+		try {
+			Datastream ds = BenchData.getDatastream("SensorCluster");
+			BenchData.service.create(new Observation(rate, ds));
+		} catch (ServiceFailureException exc) {
+			LOGGER.error("Failed.", exc);
+		}		
+	}
+
 	public synchronized void initWorkLoad(JsonNode updatedProperties) throws ServiceFailureException, URISyntaxException {
 		if (running) {
 			stopWorkLoad();
 		}
 		int oldWorkerCount = settings.workers;
 		int oldPeriod = settings.period;
+		int oldJitter = settings.jitter;
 		settings.readFromJsonNode(updatedProperties);
 
 		LOGGER.debug("Benchmark initializing, starting workers");
 		logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
+		logUpdates(BenchProperties.TAG_JITTER, oldJitter, settings.jitter);
 		logUpdates(BenchProperties.TAG_WORKERS, oldWorkerCount, settings.workers);
 
 		if (oldWorkerCount != settings.workers) {
@@ -115,11 +126,11 @@ public class SensorScheduler {
 			logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
 		}
 
-		LOGGER.info("Starting workload: {} workers, {} sensors, {} delay.", settings.workers, settings.sensors, settings.period);
+		LOGGER.info("Starting workload: {} workers, {} sensors, {} delay, {} jitter.", settings.workers, settings.sensors, settings.period, settings.jitter);
 		double delayPerSensor = ((double) settings.period) / settings.sensors;
 		double currentDelay = 0;
 		for (DataSource sensor : dsList) {
-			ScheduledFuture<?> handle = sensorScheduler.scheduleAtFixedRate(sensor, (long) currentDelay, settings.period, TimeUnit.MILLISECONDS);
+			ScheduledFuture<?> handle = sensorScheduler.scheduleAtFixedRate(sensor, (long) currentDelay, settings.period - settings.jitter / 2, TimeUnit.MILLISECONDS);
 			sensor.setSchedulerHandle(handle);
 			currentDelay += delayPerSensor;
 		}
@@ -150,17 +161,12 @@ public class SensorScheduler {
 		double rate = 1000.0 * entries / (stopTime - startTime);
 		LOGGER.info("-=> {} entries created per sec", String.format("%.2f", rate));
 
-		try {
-			Datastream ds = BenchData.getDatastream("SensorCluster");
-			BenchData.service.create(new Observation(rate, ds));
-		} catch (ServiceFailureException exc) {
-			LOGGER.error("Failed.", exc);
-		}
+		sendRateObservation(rate);
 
 		LOGGER.info("Benchmark finished");
 		running = false;
 	}
-
+	
 	public void printStats() {
 		long curTime = System.currentTimeMillis();
 		int entries = 0;
@@ -170,6 +176,8 @@ public class SensorScheduler {
 
 		double rate = 1000.0 * entries / (curTime - startTime);
 		LOGGER.info("-=> {}/s", String.format("%.2f", rate));
+		
+		sendRateObservation(rate);
 	}
 
 	private void cleanupScheduler(boolean all) {

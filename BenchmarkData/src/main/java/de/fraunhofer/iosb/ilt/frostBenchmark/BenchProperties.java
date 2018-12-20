@@ -26,6 +26,9 @@ public class BenchProperties {
 	public static final String TAG_PERIOD = "PERIOD";
 	public static final int DFLT_PERIOD = 500;
 
+	public static final String TAG_JITTER = "JITTER";
+	public static final int DFLT_JITTER = 5;
+
 	public static final String TAG_SENSORS = "SENSORS";
 	public static final int DFLT_SENSORS = 20;
 
@@ -49,6 +52,7 @@ public class BenchProperties {
 	public int postdelay = 1000;
 	public int coverage = 100;
 	public int period = DFLT_PERIOD;
+	public int jitter = DFLT_JITTER;
 	public int sensors = DFLT_SENSORS;
 	public int workers = DFLT_WORKERS;
 
@@ -57,6 +61,7 @@ public class BenchProperties {
 		coverage = getEnv(TAG_COVERAGE, DFLT_COVERAGE);
 		postdelay = getEnv(TAG_POSTDELAY, DFLT_POSTDELAY);
 		period = getEnv(TAG_PERIOD, DFLT_PERIOD);
+		jitter = getEnv(TAG_JITTER, DFLT_JITTER);
 		sensors = getEnv(TAG_SENSORS, DFLT_SENSORS);
 		return this;
 	}
@@ -69,6 +74,7 @@ public class BenchProperties {
 		coverage = getProperty(adds, TAG_COVERAGE, coverage);
 		postdelay = getProperty(adds, TAG_POSTDELAY, postdelay);
 		period = getProperty(adds, TAG_PERIOD, period);
+		jitter = getProperty(adds, TAG_JITTER, jitter);
 		sensors = getProperty(adds, TAG_SENSORS, sensors);
 		return this;
 	}
