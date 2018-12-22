@@ -32,6 +32,9 @@ public class BenchProperties {
 	public static final String TAG_SENSORS = "SENSORS";
 	public static final int DFLT_SENSORS = 20;
 
+	public static final String TAG_ANALYTICS = "ANALYTICS";
+	public static final int DFLT_ANALYTICS = 20;
+
 	public static final String TAG_WORKERS = "WORKERS";
 	public static final int DFLT_WORKERS = 10;
 
@@ -54,6 +57,7 @@ public class BenchProperties {
 	public int period = DFLT_PERIOD;
 	public int jitter = DFLT_JITTER;
 	public int sensors = DFLT_SENSORS;
+	public int analytics = DFLT_ANALYTICS;
 	public int workers = DFLT_WORKERS;
 
 	public BenchProperties readFromEnvironment() {
@@ -63,6 +67,7 @@ public class BenchProperties {
 		period = getEnv(TAG_PERIOD, DFLT_PERIOD);
 		jitter = getEnv(TAG_JITTER, DFLT_JITTER);
 		sensors = getEnv(TAG_SENSORS, DFLT_SENSORS);
+		analytics = getEnv(TAG_ANALYTICS, DFLT_ANALYTICS);
 		return this;
 	}
 
@@ -76,6 +81,7 @@ public class BenchProperties {
 		period = getProperty(adds, TAG_PERIOD, period);
 		jitter = getProperty(adds, TAG_JITTER, jitter);
 		sensors = getProperty(adds, TAG_SENSORS, sensors);
+		analytics = getProperty(adds, TAG_ANALYTICS, analytics);
 		return this;
 	}
 

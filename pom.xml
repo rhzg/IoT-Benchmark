@@ -11,6 +11,7 @@
 		<module>BenchmarkData</module>
 		<module>BenchmarkController</module>
 		<module>SensorCluster</module>
+		<module>AnalyticsCluster</module>
 		<module>SubscriberCluster</module>
 		<module>StreamProcessor</module>
 		<module>MqttHelper</module>
