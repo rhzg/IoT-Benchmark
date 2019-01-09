@@ -18,6 +18,6 @@ build-master:
   stage: build
   script:
     - mvn $MAVEN_CLI_OPTS install
-    - mvn $MAVEN_CLI_OPTS dockerfile:build dockerfile:push -pl StreamProcessor,SubscriberCluster,SensorCluster,BenchmarkController -Ddocker-registry="$CI_REGISTRY_IMAGE"
+    - mvn $MAVEN_CLI_OPTS dockerfile:build dockerfile:push -pl StreamProcessor,SubscriberCluster,SensorCluster,AnalyticsCluster,BenchmarkController -Ddocker-registry="$CI_REGISTRY_IMAGE"
   tags:
     - ILT
