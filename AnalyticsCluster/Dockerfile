@@ -6,7 +6,7 @@ ENV BROKER localhost
 ENV SESSION 0815
 ENV WORKERS 10
 ENV POSTDELAY 1
-      
 
-ADD target/SensorCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar ./frostbenchmark.jar
+
+ADD target/AnalyticsCluster-0.0.1-SNAPSHOT-jar-with-dependencies.jar ./frostbenchmark.jar
 CMD ["/usr/bin/java", "-jar", "./frostbenchmark.jar"]
