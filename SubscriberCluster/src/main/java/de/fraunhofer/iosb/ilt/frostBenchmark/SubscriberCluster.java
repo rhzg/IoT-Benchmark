@@ -144,7 +144,7 @@ public class SubscriberCluster extends MqttHelper {
 		long notificationCount = scheduler.getNotificationCount();
 		double rate = (1000.0 * notificationCount) / (endTime - startTime);
 		try {
-			Datastream ds = BenchData.getDatastream("SubscriberCluster");
+			Datastream ds = BenchData.getDatastream(BenchData.getEnv(BenchData.TAG_NAME, "SubscriberCluster"));
 			BenchData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException e) {
 			LOGGER.trace("Exception: ", e);

@@ -58,7 +58,7 @@ public class AnalyticsScheduler {
 
 	private void sendRateObservation (double rate) {
 		try {
-			Datastream ds = BenchData.getDatastream("AnalyticsCluster");
+			Datastream ds = BenchData.getDatastream(BenchData.getEnv(BenchData.TAG_NAME, "AnalyticsCluster"));
 			BenchData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
 			LOGGER.error("Failed.", exc);
