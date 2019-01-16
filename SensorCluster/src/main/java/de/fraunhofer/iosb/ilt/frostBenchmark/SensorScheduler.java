@@ -58,7 +58,7 @@ public class SensorScheduler {
 
 	private void sendRateObservation (double rate) {
 		try {
-			Datastream ds = BenchData.getDatastream("SensorCluster");
+			Datastream ds = BenchData.getDatastream(BenchData.getEnv(BenchData.TAG_NAME, "SensorCluster"));
 			BenchData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
 			LOGGER.error("Failed.", exc);
@@ -75,6 +75,7 @@ public class SensorScheduler {
 		settings.readFromJsonNode(updatedProperties);
 
 		LOGGER.debug("Benchmark initializing, starting workers");
+		logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.sensors);
 		logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
 		logUpdates(BenchProperties.TAG_JITTER, oldJitter, settings.jitter);
 		logUpdates(BenchProperties.TAG_WORKERS, oldWorkerCount, settings.workers);

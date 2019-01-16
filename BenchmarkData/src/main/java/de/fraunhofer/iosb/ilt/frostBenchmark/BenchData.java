@@ -84,7 +84,7 @@ public class BenchData {
 			service.setClient(httpClient);
 
 			LOGGER.debug("Creating SensorThingsService done");
-		} catch (MalformedURLException | URISyntaxException e) {
+		} catch (MalformedURLException e) {
 			LOGGER.error("Exception:", e);
 		}
 		LOGGER.trace("Initialized for: {} [SessionId = {}]", baseUriStr, sessionId);
