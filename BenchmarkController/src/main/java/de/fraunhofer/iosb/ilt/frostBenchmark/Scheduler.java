@@ -78,6 +78,7 @@ public class Scheduler {
 		}
 
 		JsonNode initProperties = scriptTree.get("initialize");
+		System.out.println("initialize experiment: " + initProperties.toString());
 		sendCommands(initProperties, STATUS.INITIALIZE);
 
 		JsonNode sequence = scriptTree.get("sequence");
