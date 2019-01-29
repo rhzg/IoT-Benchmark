@@ -19,6 +19,8 @@ public class AnalyticClient implements Runnable {
 	private int queryCount = 0;
 	private long startTime;
 	private long lastTime;
+	private int analytic_cyles;
+	private double someFancyResult;
 
 	private Datastream datastream;
 
@@ -35,10 +37,11 @@ public class AnalyticClient implements Runnable {
 	 * @param name The name
 	 * @return this
 	 * @throws ServiceFailureException if something goes wrong
-	 * @throws URISyntaxException if something goes wrong
+	 * @throws URISyntaxException      if something goes wrong
 	 */
-	public AnalyticClient intialize(String name) throws ServiceFailureException, URISyntaxException {
+	public AnalyticClient intialize(String name, int cylces) throws ServiceFailureException, URISyntaxException {
 		myName = name;
+		analytic_cyles = cylces;
 		datastream = BenchData.getDatastream(myName);
 		return this;
 	}
@@ -54,30 +57,33 @@ public class AnalyticClient implements Runnable {
 		}
 		lastTime = System.currentTimeMillis();
 //		double queryRate = calculateQueryRate();
-		
+
 		queryCount++;
 		try {
-			EntityList<Observation> obs = datastream.observations().query().select("phenomenonTime","result").top(10).list();
+			EntityList<Observation> obs = datastream.observations().query().select("phenomenonTime", "result").top(10)
+					.list();
 			doSomeAnalytics(obs);
 		} catch (ServiceFailureException exc) {
 			LOGGER.error("Failed to create observation.", exc);
 		}
 	}
 
-	private void doSomeAnalytics (EntityList<Observation> obs) {
+	private void doSomeAnalytics(EntityList<Observation> obs) {
 		// TODO: do some fancy stuff here
 		// ....
-		double avgRate = 0.0;
-		for (Observation o : obs) {
-			avgRate += Double.parseDouble(o.getResult().toString());			
+		for (int i = 0; i < analytic_cyles; i++) {
+			someFancyResult = 0.0;
+			for (Observation o : obs) {
+				someFancyResult += Double.parseDouble(o.getResult().toString());
+				someFancyResult += Math.sqrt(someFancyResult * i);
+			}	 
 		}
-		avgRate = avgRate / obs.size();
 	}
-	
-	
+
 	public int reset() {
 		double observateRate = calculateQueryRate();
-		LOGGER.debug("{} created {} entries at a rate of {}/s", myName, queryCount, String.format("%.2f", observateRate));
+		LOGGER.debug("{} created {} entries at a rate of {}/s", myName, queryCount,
+				String.format("%.2f", observateRate));
 		startTime = 0;
 		int obsCount = queryCount;
 		queryCount = 0;

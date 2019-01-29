@@ -14,31 +14,31 @@ public class BenchProperties {
 	public static final String TAG_PROXYHOST = "proxyhost";
 	public static final String TAG_PROXYPORT = "proxyport";
 
-	public static final String TAG_TIMEOUT = "timeout";
+	public static final String TAG_TIMEOUT = "timeout";			// not used
 	public static final int DFLT_TIMEOUT = 10000;
 
-	public static final String TAG_POSTDELAY = "POSTDELAY";
+	public static final String TAG_POSTDELAY = "POSTDELAY";		// not used
 	public static final int DFLT_POSTDELAY = 1000;
 
-	public static final String TAG_COVERAGE = "COVERAGE";
+	public static final String TAG_COVERAGE = "COVERAGE";		// subscription coverage of datastreams in percentage 
 	public static final int DFLT_COVERAGE = 100;
 
-	public static final String TAG_PERIOD = "PERIOD";
+	public static final String TAG_PERIOD = "PERIOD";			// delay in ms between two observation posts. defines the insertion rate
 	public static final int DFLT_PERIOD = 500;
 
-	public static final String TAG_JITTER = "JITTER";
+	public static final String TAG_JITTER = "JITTER";			// variation interval added to period
 	public static final int DFLT_JITTER = 5;
 
-	public static final String TAG_SENSORS = "SENSORS";
+	public static final String TAG_SENSORS = "SENSORS";			// number of sensor to be used
 	public static final int DFLT_SENSORS = 20;
 
-	public static final String TAG_ANALYTICS = "ANALYTICS";
+	public static final String TAG_ANALYTICS = "ANALYTICS";		// number of analytic calculation cycles
 	public static final int DFLT_ANALYTICS = 20;
 
-	public static final String TAG_WORKERS = "WORKERS";
+	public static final String TAG_WORKERS = "WORKERS";			// number of worker threads used 
 	public static final int DFLT_WORKERS = 10;
 
-	public static final String TAG_STATUS = "status";
+	public static final String TAG_STATUS = "status";			// benchmark status
 
 	public static enum STATUS {
 		INITIALIZE,

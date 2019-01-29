@@ -91,7 +91,7 @@ public class AnalyticsScheduler {
 				LOGGER.info("Setting up {} analytics...", toAdd);
 				for (int i = haveCount; i < settings.analytics; i++) {
 					String name = "Benchmark." + i;
-					AnalyticClient sensor = new AnalyticClient(BenchData.service).intialize(name);
+					AnalyticClient sensor = new AnalyticClient(BenchData.service).intialize(name, settings.analytics);
 					dsList.add(sensor);
 					if ((i - haveCount) % 100 == 0) {
 						LOGGER.info("... {}", i - haveCount);
