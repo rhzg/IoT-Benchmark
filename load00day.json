@@ -1,17 +1,17 @@
 {
 	"initialize":
 	{
-		"SensorCluster_Low": { "PERIOD": 1000000, "SENSORS": 500, "JITTER": 100000, "WORKERS": 10 },
-		"SensorCluster_Medium": { "PERIOD": 100000, "SENSORS": 500, "JITTER": 10000, "WORKERS": 20 },
-		"SensorCluster_High": { "PERIOD": 30000, "SENSORS": 500, "JITTER": 3000, "WORKERS": 50 },
+		"SensorCluster_Low": { "PERIOD": 1000000, "SENSORS": 50, "JITTER": 100000, "WORKERS": 10 },
+		"SensorCluster_Medium": { "PERIOD": 100000, "SENSORS": 50, "JITTER": 10000, "WORKERS": 20 },
+		"SensorCluster_High": { "PERIOD": 30000, "SENSORS": 50, "JITTER": 3000, "WORKERS": 50 },
 
 		"Listener_Low": { "COVERAGE": 2 },
 		"Listener_Medium": { "COVERAGE": 10 },
 		"Listener_High": { "COVERAGE": 30 },
 
-		"Analytics_Low": { "PERIOD": 60000, "JITTER": 6000, "WORKERS": 10 },
-		"Analytics_Medium": { "PERIOD": 20000, "JITTER": 2000, "WORKERS": 20 },
-		"Analytics_High": { "PERIOD": 1000, "JITTER": 100, "WORKERS": 50 }
+		"Analytics_Low": { "PERIOD": 60000, "JITTER": 6000, "WORKERS": 10, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 0 },
+		"Analytics_Medium": { "PERIOD": 20000, "JITTER": 2000, "WORKERS": 20, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 0 },
+		"Analytics_High": { "PERIOD": 1000, "JITTER": 100, "WORKERS": 50, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 0 }
 	},
 
 	"sequence":
@@ -29,9 +29,9 @@
 			"Listener_Medium": { "COVERAGE": 10 },
 			"Listener_High": { "COVERAGE": 10 },
 
-			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000 },
-			"Analytics_Medium": { "PERIOD": 10000, "JITTER": 1000 },
-			"Analytics_High": { "PERIOD": 1000, "JITTER": 100 }
+			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100 },
+			"Analytics_Medium": { "PERIOD": 10000, "JITTER": 1000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 1000 },
+			"Analytics_High": { "PERIOD": 1000, "JITTER": 100, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100000 }
 		},
 		{
 			"seq": 700,
@@ -46,9 +46,9 @@
 			"Listener_Medium": { "COVERAGE": 10 },
 			"Listener_High": { "COVERAGE": 20 },
 
-			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000 },
-			"Analytics_Medium": { "PERIOD": 8000, "JITTER": 800 },
-			"Analytics_High": { "PERIOD": 800, "JITTER": 80 }
+			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100 },
+			"Analytics_Medium": { "PERIOD": 8000, "JITTER": 800, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 10000 },
+			"Analytics_High": { "PERIOD": 800, "JITTER": 80, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100000 }
 		},
 		{
 			"seq": 800,
@@ -63,9 +63,9 @@
 			"Listener_Medium": { "COVERAGE": 10 },
 			"Listener_High": { "COVERAGE": 10 },
 
-			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000 },
-			"Analytics_Medium": { "PERIOD": 7000, "JITTER": 700 },
-			"Analytics_High": { "PERIOD": 700, "JITTER": 70 }
+			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100 },
+			"Analytics_Medium": { "PERIOD": 7000, "JITTER": 700, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 2000 },
+			"Analytics_High": { "PERIOD": 700, "JITTER": 70, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 150000 }
 		},
 		{
 			"seq": 900,
@@ -80,9 +80,9 @@
 			"Listener_Medium": { "COVERAGE": 15 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000 },
-			"Analytics_Medium": { "PERIOD": 7000, "JITTER": 700 },
-			"Analytics_High": { "PERIOD": 600, "JITTER": 60 }
+			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100 },
+			"Analytics_Medium": { "PERIOD": 7000, "JITTER": 700, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 2000 },
+			"Analytics_High": { "PERIOD": 600, "JITTER": 60, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 150000 }
 		},
 		{
 			"seq": 1000,
@@ -97,9 +97,9 @@
 			"Listener_Medium": { "COVERAGE": 15 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000 },
-			"Analytics_Medium": { "PERIOD": 6500, "JITTER": 650 },
-			"Analytics_High": { "PERIOD": 550, "JITTER": 55 }
+			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100 },
+			"Analytics_Medium": { "PERIOD": 6500, "JITTER": 650, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 250 },
+			"Analytics_High": { "PERIOD": 550, "JITTER": 55, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 200000 }
 		},
 		{
 			"seq": 1100,
@@ -114,9 +114,9 @@
 			"Listener_Medium": { "COVERAGE": 15 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000 },
-			"Analytics_Medium": { "PERIOD": 5000, "JITTER": 500 },
-			"Analytics_High": { "PERIOD": 500, "JITTER": 50 }
+			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 300 },
+			"Analytics_Medium": { "PERIOD": 5000, "JITTER": 500, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 3000 },
+			"Analytics_High": { "PERIOD": 500, "JITTER": 50, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 180000 }
 		},
 		{
 			"seq": 1200,
@@ -131,9 +131,9 @@
 			"Listener_Medium": { "COVERAGE": 15 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000 },
-			"Analytics_Medium": { "PERIOD": 5500, "JITTER": 550 },
-			"Analytics_High": { "PERIOD": 550, "JITTER": 55 }
+			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 350 },
+			"Analytics_Medium": { "PERIOD": 5500, "JITTER": 550, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 3500 },
+			"Analytics_High": { "PERIOD": 550, "JITTER": 55, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 250000 }
 		},
 		{
 			"seq": 1300,
@@ -148,9 +148,9 @@
 			"Listener_Medium": { "COVERAGE": 15 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 100000, "JITTER": 50000 },
-			"Analytics_Medium": { "PERIOD": 6000, "JITTER": 600 },
-			"Analytics_High": { "PERIOD": 600, "JITTER": 60 }
+			"Analytics_Low": { "PERIOD": 100000, "JITTER": 50000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 400 },
+			"Analytics_Medium": { "PERIOD": 6000, "JITTER": 600, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 4500 },
+			"Analytics_High": { "PERIOD": 600, "JITTER": 60, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 450000 }
 		},
 		{
 			"seq": 1400,
@@ -165,9 +165,9 @@
 			"Listener_Medium": { "COVERAGE": 15 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000 },
-			"Analytics_Medium": { "PERIOD": 6500, "JITTER": 6500 },
-			"Analytics_High": { "PERIOD": 650, "JITTER": 65 }
+			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 300 },
+			"Analytics_Medium": { "PERIOD": 6500, "JITTER": 6500, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 3000 },
+			"Analytics_High": { "PERIOD": 650, "JITTER": 65, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 350000 }
 		},
 		{
 			"seq": 1500,
@@ -182,9 +182,9 @@
 			"Listener_Medium": { "COVERAGE": 15 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000 },
-			"Analytics_Medium": { "PERIOD": 7000, "JITTER": 700 },
-			"Analytics_High": { "PERIOD": 700, "JITTER": 70 }
+			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 400 },
+			"Analytics_Medium": { "PERIOD": 7000, "JITTER": 700, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 4000 },
+			"Analytics_High": { "PERIOD": 700, "JITTER": 70, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 400000 }
 		},
 		{
 			"seq": 1600,
@@ -199,9 +199,9 @@
 			"Listener_Medium": { "COVERAGE": 5 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000 },
-			"Analytics_Medium": { "PERIOD": 7500, "JITTER": 750 },
-			"Analytics_High": { "PERIOD": 750, "JITTER": 75 }
+			"Analytics_Low": { "PERIOD": 50000, "JITTER": 5000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 300 },
+			"Analytics_Medium": { "PERIOD": 7500, "JITTER": 750, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 3500 },
+			"Analytics_High": { "PERIOD": 750, "JITTER": 75, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 450000 }
 		},
 		{
 			"seq": 1700,
@@ -216,9 +216,9 @@
 			"Listener_Medium": { "COVERAGE": 5 },
 			"Listener_High": { "COVERAGE": 30 },
 
-			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000 },
-			"Analytics_Medium": { "PERIOD": 8500, "JITTER": 850 },
-			"Analytics_High": { "PERIOD": 800, "JITTER": 80 }
+			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 200 },
+			"Analytics_Medium": { "PERIOD": 8500, "JITTER": 850, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 2400 },
+			"Analytics_High": { "PERIOD": 800, "JITTER": 80, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 160000 }
 		},
 		{
 			"seq": 1800,
@@ -233,13 +233,13 @@
 			"Listener_Medium": { "COVERAGE": 5 },
 			"Listener_High": { "COVERAGE": 10 },
 
-			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000 },
-			"Analytics_Medium": { "PERIOD": 20000, "JITTER": 20000 },
-			"Analytics_High": { "PERIOD": 1000, "JITTER": 100 }
+			"Analytics_Low": { "PERIOD": 100000, "JITTER": 60000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 100 },
+			"Analytics_Medium": { "PERIOD": 20000, "JITTER": 20000, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 1000 },
+			"Analytics_High": { "PERIOD": 1000, "JITTER": 100, "ANALYTIC_JOBS": 10, "ANALYTIC_LOOPS": 120000 }
 		},
 
 		{
-			"seq": 999,
+			"seq": 9999,
 			"info": "12 hours Benchmark run",
 			"duration": 1000
 		}

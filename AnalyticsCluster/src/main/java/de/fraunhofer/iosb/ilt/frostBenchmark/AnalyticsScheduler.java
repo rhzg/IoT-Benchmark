@@ -72,12 +72,16 @@ public class AnalyticsScheduler {
 		int oldWorkerCount = settings.workers;
 		int oldPeriod = settings.period;
 		int oldJitter = settings.jitter;
+		int oldAnalyticLoops = settings.analyticLoops;
+		int oldAnalyticJobs = settings.analyticJobs;
 		settings.readFromJsonNode(updatedProperties);
 
 		LOGGER.debug("Benchmark initializing, starting workers");
 		logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
 		logUpdates(BenchProperties.TAG_JITTER, oldJitter, settings.jitter);
 		logUpdates(BenchProperties.TAG_WORKERS, oldWorkerCount, settings.workers);
+		logUpdates(BenchProperties.TAG_ANALYTIC_LOOPS, oldAnalyticLoops, settings.analyticLoops);
+		logUpdates(BenchProperties.TAG_ANALYTIC_JOBS, oldAnalyticJobs, settings.analyticJobs);
 
 		if (oldWorkerCount != settings.workers) {
 			cleanupScheduler(false);
@@ -85,23 +89,23 @@ public class AnalyticsScheduler {
 		}
 
 		int haveCount = dsList.size();
-		if (settings.analytics != haveCount) {
-			if (settings.analytics > haveCount) {
-				int toAdd = settings.analytics - haveCount;
+		if (settings.analyticJobs != haveCount) {
+			if (settings.analyticJobs > haveCount) {
+				int toAdd = settings.analyticJobs - haveCount;
 				LOGGER.info("Setting up {} analytics...", toAdd);
-				for (int i = haveCount; i < settings.analytics; i++) {
+				for (int i = haveCount; i < settings.analyticJobs; i++) {
 					String name = "Benchmark." + i;
-					AnalyticClient sensor = new AnalyticClient(BenchData.service).intialize(name, settings.analytics);
+					AnalyticClient sensor = new AnalyticClient(BenchData.service).intialize(name, settings.analyticLoops);
 					dsList.add(sensor);
 					if ((i - haveCount) % 100 == 0) {
 						LOGGER.info("... {}", i - haveCount);
 					}
 				}
 			}
-			if (settings.analytics < haveCount) {
-				int toRemove = haveCount - settings.analytics;
+			if (settings.analyticJobs < haveCount) {
+				int toRemove = haveCount - settings.analyticJobs;
 				LOGGER.info("Taking down {} analytics...", toRemove);
-				while (dsList.size() > settings.analytics) {
+				while (dsList.size() > settings.analyticJobs) {
 					AnalyticClient ds = dsList.remove(dsList.size() - 1);
 					ds.cancel();
 				}
@@ -126,8 +130,8 @@ public class AnalyticsScheduler {
 			logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
 		}
 
-		LOGGER.info("Starting workload: {} workers, {} analytics, {} delay, {} jitter.", settings.workers, settings.analytics, settings.period, settings.jitter);
-		double delayPerSensor = ((double) settings.period) / settings.analytics;
+		LOGGER.info("Starting workload: {} workers, {} analytics, {} delay, {} jitter.", settings.workers, settings.analyticLoops, settings.period, settings.jitter);
+		double delayPerSensor = (double) settings.period;
 		double currentDelay = 0;
 		for (AnalyticClient sensor : dsList) {
 			ScheduledFuture<?> handle = analyticsScheduler.scheduleAtFixedRate(sensor, (long) currentDelay, settings.period - settings.jitter / 2, TimeUnit.MILLISECONDS);

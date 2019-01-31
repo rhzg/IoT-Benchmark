@@ -15,7 +15,7 @@ REM number of parallel Sensors data providers
 set WORKERS=10
 
 REM msec delay between observations
-set PERIOD=50
+set PERIOD=1000
 
 set SENSORS=10
 

@@ -153,9 +153,9 @@ public class AnalyticsCluster extends MqttHelper implements TimeoutListener {
 		LOGGER.info("Starting '{}' with {} Threads to simulate {} Analytic clients with {} msec post period and {} analytic cycles",
 				BenchData.name,
 				benchProperties.workers,
-				benchProperties.analytics,
+				benchProperties.analyticLoops,
 				benchProperties.period,
-				benchProperties.analytics
+				benchProperties.analyticLoops
 		);
 
 		try {

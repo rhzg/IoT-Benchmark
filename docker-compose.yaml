@@ -68,7 +68,8 @@ services:
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - BROKER=tcp://10.56.4.54:1883
       - SESSION=0815
-      - COVERAGE=0
+      - ANALYTIC_JOBS=0
+      - ANALYTIC_LOOPS=1000
       - JITTER=5
       - PERIOD=1000
       - WORKERS=10
@@ -80,7 +81,8 @@ services:
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - BROKER=tcp://10.56.4.54:1883
       - SESSION=0815
-      - COVERAGE=0
+      - ANALYTIC_JOBS=0
+      - ANALYTIC_LOOPS=1000
       - JITTER=5
       - PERIOD=1000
       - WORKERS=10
@@ -92,7 +94,8 @@ services:
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - BROKER=tcp://10.56.4.54:1883
       - SESSION=0815
-      - COVERAGE=0
+      - ANALYTIC_JOBS=0
+      - ANALYTIC_LOOPS=1000
       - JITTER=5
       - PERIOD=1000
       - WORKERS=10

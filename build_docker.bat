@@ -1,0 +1,1 @@
+mvn dockerfile:build -pl StreamProcessor,SubscriberCluster,SensorCluster,BenchmarkController,AnalyticsCluster

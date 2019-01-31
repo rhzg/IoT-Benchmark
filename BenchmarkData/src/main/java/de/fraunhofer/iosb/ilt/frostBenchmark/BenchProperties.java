@@ -32,8 +32,11 @@ public class BenchProperties {
 	public static final String TAG_SENSORS = "SENSORS";			// number of sensor to be used
 	public static final int DFLT_SENSORS = 20;
 
-	public static final String TAG_ANALYTICS = "ANALYTICS";		// number of analytic calculation cycles
-	public static final int DFLT_ANALYTICS = 20;
+	public static final String TAG_ANALYTIC_JOBS = "ANALYTIC_JOBS";		// number of analytic calculation cycles
+	public static final int DFLT_ANALYTICS_JOBS = 20;
+
+	public static final String TAG_ANALYTIC_LOOPS = "ANALYTIC_LOOPS";		// number of analytic calculation cycles
+	public static final int DFLT_ANALYTICS_LOOPS = 20;
 
 	public static final String TAG_WORKERS = "WORKERS";			// number of worker threads used 
 	public static final int DFLT_WORKERS = 10;
@@ -57,7 +60,8 @@ public class BenchProperties {
 	public int period = DFLT_PERIOD;
 	public int jitter = DFLT_JITTER;
 	public int sensors = DFLT_SENSORS;
-	public int analytics = DFLT_ANALYTICS;
+	public int analyticLoops = DFLT_ANALYTICS_LOOPS;
+	public int analyticJobs = DFLT_ANALYTICS_JOBS;
 	public int workers = DFLT_WORKERS;
 
 	public BenchProperties readFromEnvironment() {
@@ -67,7 +71,8 @@ public class BenchProperties {
 		period = getEnv(TAG_PERIOD, DFLT_PERIOD);
 		jitter = getEnv(TAG_JITTER, DFLT_JITTER);
 		sensors = getEnv(TAG_SENSORS, DFLT_SENSORS);
-		analytics = getEnv(TAG_ANALYTICS, DFLT_ANALYTICS);
+		analyticLoops = getEnv(TAG_ANALYTIC_LOOPS, DFLT_ANALYTICS_LOOPS);
+		analyticJobs = getEnv(TAG_ANALYTIC_JOBS, DFLT_ANALYTICS_JOBS);
 		return this;
 	}
 
@@ -81,7 +86,8 @@ public class BenchProperties {
 		period = getProperty(adds, TAG_PERIOD, period);
 		jitter = getProperty(adds, TAG_JITTER, jitter);
 		sensors = getProperty(adds, TAG_SENSORS, sensors);
-		analytics = getProperty(adds, TAG_ANALYTICS, analytics);
+		analyticLoops = getProperty(adds, TAG_ANALYTIC_LOOPS, analyticLoops);
+		analyticJobs = getProperty(adds, TAG_ANALYTIC_JOBS, analyticJobs);
 		return this;
 	}
 

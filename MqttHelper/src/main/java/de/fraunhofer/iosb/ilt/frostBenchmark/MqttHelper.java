@@ -178,9 +178,6 @@ public abstract class MqttHelper implements MqttCallback {
 		LOGGER.info("Exception:", cause);
 		try {
 			client.reconnect();
-			if (sub != null) {
-				sub.doSubscribe();
-			}
 		} catch (MqttException exc) {
 			LOGGER.error("Failed to reconnect.", exc);
 			ex = cause;
