@@ -70,12 +70,13 @@ public class SensorScheduler {
 			stopWorkLoad();
 		}
 		int oldWorkerCount = settings.workers;
+		int oldSensors = settings.sensors;
 		int oldPeriod = settings.period;
 		int oldJitter = settings.jitter;
 		settings.readFromJsonNode(updatedProperties);
 
 		LOGGER.debug("Benchmark initializing, starting workers");
-		logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.sensors);
+		logUpdates(BenchProperties.TAG_SENSORS, oldSensors, settings.sensors);
 		logUpdates(BenchProperties.TAG_PERIOD, oldPeriod, settings.period);
 		logUpdates(BenchProperties.TAG_JITTER, oldJitter, settings.jitter);
 		logUpdates(BenchProperties.TAG_WORKERS, oldWorkerCount, settings.workers);

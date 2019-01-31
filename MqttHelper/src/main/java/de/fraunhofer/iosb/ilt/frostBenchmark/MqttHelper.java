@@ -17,14 +17,7 @@ public abstract class MqttHelper implements MqttCallback {
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MqttHelper.class);
 
 	public enum STATE {
-		BEGIN,
-		CONNECTED,
-		PUBLISHED,
-		SUBSCRIBED,
-		DISCONNECT,
-		DISCONNECTED,
-		FINISH,
-		ERROR;
+		BEGIN, CONNECTED, PUBLISHED, SUBSCRIBED, DISCONNECT, DISCONNECTED, FINISH, ERROR;
 	}
 
 	static final String BROKER = "BROKER";
@@ -39,14 +32,15 @@ public abstract class MqttHelper implements MqttCallback {
 	private final Object waiter = new Object();
 	private boolean donext = false;
 	private final List<String> subscriptions = new ArrayList<>();
+	private Subscriber sub;
 
 	/**
 	 * Constructs an instance of the sample client wrapper
 	 *
-	 * @param brokerUrl the url to connect to
-	 * @param clientId the client id to connect with
+	 * @param brokerUrl    the url to connect to
+	 * @param clientId     the client id to connect with
 	 * @param cleanSession clear state at end of connection or not (durable or
-	 * non-durable subscriptions)
+	 *                     non-durable subscriptions)
 	 * @throws MqttException
 	 */
 	public MqttHelper(String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
@@ -114,13 +108,13 @@ public abstract class MqttHelper implements MqttCallback {
 	}
 
 	/**
-	 * Subscribe to a topic on an MQTT server Once subscribed this method waits
-	 * for the messages to arrive from the server that match the subscription.
-	 * It continues listening for messages until interrupted.
+	 * Subscribe to a topic on an MQTT server Once subscribed this method waits for
+	 * the messages to arrive from the server that match the subscription. It
+	 * continues listening for messages until interrupted.
 	 *
 	 * @param topicName to subscribeAndWait to (can be wild carded)
-	 * @param qos the maximum quality of service to receive messages at for this
-	 * subscription
+	 * @param qos       the maximum quality of service to receive messages at for
+	 *                  this subscription
 	 * @throws MqttException
 	 */
 	public void subscribeAndWait(String topicName, int qos) throws Throwable {
@@ -133,38 +127,40 @@ public abstract class MqttHelper implements MqttCallback {
 			LOGGER.debug("Handling state: {}", state);
 			int waitTime = 10000;
 			switch (state) {
-				case BEGIN:
-					MqttConnector con = new MqttConnector();
-					con.doConnect();
-					break;
+			case BEGIN:
+				MqttConnector con = new MqttConnector();
+				con.doConnect();
+				break;
 
-				case CONNECTED:
-					Subscriber sub = new Subscriber();
-					sub.doSubscribe(topicName, qos);
-					break;
+			case CONNECTED:
+				if (sub == null) {
+					sub = new Subscriber(topicName, qos);
+					sub.doSubscribe();
+				}
+				break;
 
-				case SUBSCRIBED:
-					LOGGER.trace("Subscribed");
-					// Now we sleep until interrupted.
-					waitTime = 0;
-					break;
+			case SUBSCRIBED:
+				LOGGER.trace("Subscribed");
+				// Now we sleep until interrupted.
+				waitTime = 0;
+				break;
 
-				case DISCONNECT:
-					Disconnector disc = new Disconnector();
-					disc.doDisconnect();
-					waitTime = 30000;
-					break;
+			case DISCONNECT:
+				Disconnector disc = new Disconnector();
+				disc.doDisconnect();
+				waitTime = 30000;
+				break;
 
-				case ERROR:
-					throw ex;
+			case ERROR:
+				throw ex;
 
-				case DISCONNECTED:
-					state = STATE.FINISH;
-					donext = true;
-					break;
+			case DISCONNECTED:
+				state = STATE.FINISH;
+				donext = true;
+				break;
 
-				default:
-					LOGGER.error("Unhandled state: {}", state);
+			default:
+				LOGGER.error("Unhandled state: {}", state);
 			}
 			waitForStateChange(waitTime);
 		}
@@ -182,6 +178,9 @@ public abstract class MqttHelper implements MqttCallback {
 		LOGGER.info("Exception:", cause);
 		try {
 			client.reconnect();
+			if (sub != null) {
+				sub.doSubscribe();
+			}
 		} catch (MqttException exc) {
 			LOGGER.error("Failed to reconnect.", exc);
 			ex = cause;
@@ -208,8 +207,8 @@ public abstract class MqttHelper implements MqttCallback {
 	}
 
 	/**
-	 * Connect in a non-blocking way and then sit back and wait to be notified
-	 * that the action has completed.
+	 * Connect in a non-blocking way and then sit back and wait to be notified that
+	 * the action has completed.
 	 */
 	public class MqttConnector {
 
@@ -222,7 +221,7 @@ public abstract class MqttHelper implements MqttCallback {
 			IMqttActionListener conListener = new IMqttActionListener() {
 				@Override
 				public void onSuccess(IMqttToken asyncActionToken) {
-					LOGGER.trace("Connected");
+					LOGGER.info("Connected");
 					state = STATE.CONNECTED;
 					carryOn();
 				}
@@ -252,21 +251,28 @@ public abstract class MqttHelper implements MqttCallback {
 	 * Subscribe in a non-blocking way and then sit back and wait to be notified
 	 * that the action has completed.
 	 */
-	public class Subscriber {
+	private class Subscriber {
+		private String topicName;
+		private int qos;
 
-		public void doSubscribe(String topicName, int qos) {
+		public Subscriber(String topicName, int qos) {
+			this.topicName = topicName;
+			this.qos = qos;
+		}
+
+		public void doSubscribe() {
 			LOGGER.trace("Subscribing to topic '{}' qos {}", topicName, qos);
 
 			IMqttActionListener subListener = new IMqttActionListener() {
 				@Override
 				public void onSuccess(IMqttToken asyncActionToken) {
-					LOGGER.trace("Subscribe Completed");
+					LOGGER.info("Subscribe Completed");
 					setState(STATE.SUBSCRIBED);
 				}
 
 				@Override
 				public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-					LOGGER.trace("Subscribe failed", exception);
+					LOGGER.warn("Subscribe failed", exception);
 					ex = exception;
 					setState(STATE.ERROR);
 				}
@@ -276,7 +282,7 @@ public abstract class MqttHelper implements MqttCallback {
 				client.subscribe(topicName, qos, "Subscribe sample context", subListener);
 				subscriptions.add(topicName);
 			} catch (MqttException e) {
-				LOGGER.trace("Subscribe failed", e);
+				LOGGER.warn("Subscribe failed", e);
 				ex = e;
 				setState(STATE.ERROR);
 			}
@@ -284,8 +290,8 @@ public abstract class MqttHelper implements MqttCallback {
 	}
 
 	/**
-	 * Disconnect in a non-blocking way and then sit back and wait to be
-	 * notified that the action has completed.
+	 * Disconnect in a non-blocking way and then sit back and wait to be notified
+	 * that the action has completed.
 	 */
 	public class Disconnector {
 
@@ -296,7 +302,7 @@ public abstract class MqttHelper implements MqttCallback {
 			IMqttActionListener discListener = new IMqttActionListener() {
 				@Override
 				public void onSuccess(IMqttToken asyncActionToken) {
-					LOGGER.trace("Disconnect Completed");
+					LOGGER.info("Disconnect Completed");
 					closeClient();
 					setState(STATE.DISCONNECTED);
 				}
