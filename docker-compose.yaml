@@ -1,30 +1,98 @@
 version: '2'
 
 services:
-  sensorcluster:
+  sensorclusterLow:
     image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Sensor_1
-      - BASE_URL=http://localhost:8080/FROST-Server/v1.0/
-      - BROKER=tcp://localhost:1883
+      - NAME=Sensor_Low
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
       - SESSION=0815
       - WORKERS=10
-      - SENSORS=10
-      - PERIOD=100
+      - SENSORS=50
+      - PERIOD=1000
 
-  subscriberCluster:
+  sensorclusterMedium:
+    image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
+    environment:
+      - NAME=Sensor_Medium
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
+      - SESSION=0815
+      - WORKERS=10
+      - SENSORS=50
+      - PERIOD=1000
+
+  sensorclusterHigh:
+    image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
+    environment:
+      - NAME=Sensor_High
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
+      - SESSION=0815
+      - WORKERS=10
+      - SENSORS=50
+      - PERIOD=1000
+
+  subscriberClusterLow:
     image: fraunhoferiosb/subscribercluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Listener_1
-      - BASE_URL=http://localhost:8080/FROST-Server/v1.0/
-      - BROKER=tcp://localhost:1883
+      - NAME=Listener_Low
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
       - SESSION=0815
-      - COVERAGE=50
+      - COVERAGE=10
 
-  streamProcessor:
-    image: fraunhoferiosb/streamprocessor:0.0.1-SNAPSHOT
+  subscriberClusterMedium:
+    image: fraunhoferiosb/subscribercluster:0.0.1-SNAPSHOT
     environment:
-      - BASE_URL=http://localhost:8080/FROST-Server/v1.0/
-      - BROKER=tcp://localhost:1883
+      - NAME=Listener_Medium
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
       - SESSION=0815
-      - COVERAGE=50
+      - COVERAGE=10
+
+  subscriberClusterHigh:
+    image: fraunhoferiosb/subscribercluster:0.0.1-SNAPSHOT
+    environment:
+      - NAME=Listener_High
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
+      - SESSION=0815
+      - COVERAGE=10
+
+  analyticsClusterLow:
+    image: fraunhoferiosb/analyticscluster:0.0.1-SNAPSHOT
+    environment:
+      - NAME=Analytics_Low
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
+      - SESSION=0815
+      - COVERAGE=0
+      - JITTER=5
+      - PERIOD=1000
+      - WORKERS=10
+
+  analyticsClusterMedium:
+    image: fraunhoferiosb/analyticscluster:0.0.1-SNAPSHOT
+    environment:
+      - NAME=Analytics_Medium
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
+      - SESSION=0815
+      - COVERAGE=0
+      - JITTER=5
+      - PERIOD=1000
+      - WORKERS=10
+
+  analyticsClusterHigh:
+    image: fraunhoferiosb/analyticscluster:0.0.1-SNAPSHOT
+    environment:
+      - NAME=Analytics_High
+      - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
+      - BROKER=tcp://10.56.4.54:1883
+      - SESSION=0815
+      - COVERAGE=0
+      - JITTER=5
+      - PERIOD=1000
+      - WORKERS=10
