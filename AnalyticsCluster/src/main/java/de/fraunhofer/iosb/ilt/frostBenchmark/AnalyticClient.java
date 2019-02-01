@@ -70,12 +70,12 @@ public class AnalyticClient implements Runnable {
 
 	private void doSomeAnalytics(EntityList<Observation> obs) {
 		// TODO: do some fancy stuff here
-		// ....
 		for (int i = 0; i < analytic_cyles; i++) {
 			someFancyResult = 0.0;
 			for (Observation o : obs) {
 				someFancyResult += Double.parseDouble(o.getResult().toString());
 				someFancyResult += Math.sqrt(someFancyResult * i);
+				someFancyResult = Math.log(someFancyResult);
 			}	 
 		}
 	}
