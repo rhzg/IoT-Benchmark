@@ -78,7 +78,7 @@ public class Scheduler {
 		}
 
 		JsonNode initProperties = scriptTree.get("initialize");
-		System.out.println("initialize experiment: " + initProperties.toString());
+		LOGGER.info("initialize experiment: " + initProperties.toString());
 		sendCommands(initProperties, STATUS.INITIALIZE);
 
 		JsonNode sequence = scriptTree.get("sequence");
@@ -87,14 +87,19 @@ public class Scheduler {
 			run = sequence.get(i);
 			Long duration = run.get("duration").asLong();
 			Long seqId = run.get("seq").asLong();
-			System.out.println("run experiment " + seqId + " for " + duration + " msec");
-			System.out.println("using settings: " + run.toString());
+			String info = run.get("info").toString();
+			LOGGER.info("#----------------------------------------------------");
+			LOGGER.info("#");
+			LOGGER.info("run experiment " + seqId + " for " + duration + " msec: " + info);
+			LOGGER.info("using settings: " + run.toString());
 
 			sendCommands(run, STATUS.RUNNING);
+			LOGGER.info("#");
+			LOGGER.info("#----------------------------------------------------");
 			Thread.sleep(duration);
 		}
 		sendCommands(run, STATUS.FINISHED);
-		System.out.println("finished");
+		LOGGER.info("finished");
 	}
 
 	public void sendCommands(STATUS status) throws ServiceFailureException {
