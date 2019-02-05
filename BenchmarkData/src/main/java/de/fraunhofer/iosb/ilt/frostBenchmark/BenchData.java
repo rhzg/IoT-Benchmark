@@ -27,7 +27,7 @@ public class BenchData {
 	public static final String DFLT_NAME = "properties";
 
 	public static final String TAG_OUTPUT_PERIOD = "outputPeriod";
-	public static final int DFLT_OUTPUT_PERIOD = 5;
+	public static final int DFLT_OUTPUT_PERIOD = 2;
 
 	public static final int DFLT_PORT = 1883;
 

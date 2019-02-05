@@ -49,12 +49,12 @@ public class Controller {
 			String[] cmd = sc.nextLine().split(" ");
 			if (cmd[0].equalsIgnoreCase("run")) {
 				// processing the RUN command -------------------------------
+				Map<String, Object> properties = new HashMap<>();
 				int duration = 0;
 				if (cmd.length > 1) {
 					duration = Integer.parseInt(cmd[1]);
+					properties.put(BenchData.TAG_DURATION, duration);
 				}
-				Map<String, Object> properties = new HashMap<>();
-				properties.put(BenchData.TAG_DURATION, duration);
 				scriptScheduler.sendCommands(properties, BenchProperties.STATUS.RUNNING);
 				if (duration > 0) {
 					System.out.println("running for " + duration + " msec");
