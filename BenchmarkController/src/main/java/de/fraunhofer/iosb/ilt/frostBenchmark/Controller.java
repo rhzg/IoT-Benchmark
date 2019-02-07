@@ -20,7 +20,6 @@ public class Controller {
 	static final String SESSION = "session";
 
 	public static BenchData benchData = null;
-	public static BenchData resultData = null;
 
 	static private String getNextWord() {
 		return null;
@@ -37,8 +36,6 @@ public class Controller {
 		String resultUriStr = BenchProperties.getEnv(BenchData.TAG_RESULT_URL, baseUriStr).trim();
 		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
 		benchData = new BenchData().initialize(baseUriStr);
-		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
-		resultData = new BenchData().initialize(resultUriStr);
 		
 		Scheduler scriptScheduler = new Scheduler();
 
