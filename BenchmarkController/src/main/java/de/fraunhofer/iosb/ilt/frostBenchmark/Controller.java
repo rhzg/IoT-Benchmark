@@ -19,6 +19,9 @@ public class Controller {
 	static final String BENCHMARK = "Benchmark";
 	static final String SESSION = "session";
 
+	public static BenchData benchData = null;
+	public static BenchData resultData = null;
+
 	static private String getNextWord() {
 		return null;
 	}
@@ -30,8 +33,13 @@ public class Controller {
 			throws IOException, URISyntaxException, ServiceFailureException, InterruptedException {
 		String cmdInfo = "Available command are <run [msec]>, <stop>, <init>, <script file>, <terminate>, <help>, <delete>, <quit>";
 
-		BenchData.initialize();
-		BenchData.getBenchmarkThing();
+		String baseUriStr = BenchProperties.getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
+		String resultUriStr = BenchProperties.getEnv(BenchData.TAG_RESULT_URL, baseUriStr).trim();
+		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
+		benchData = new BenchData().initialize(baseUriStr);
+		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
+		resultData = new BenchData().initialize(resultUriStr);
+		
 		Scheduler scriptScheduler = new Scheduler();
 
 		if (args.length > 0) {
@@ -66,13 +74,13 @@ public class Controller {
 				scriptScheduler.sendCommands(BenchProperties.STATUS.FINISHED);
 			} else if (cmd[0].equalsIgnoreCase("delete")) {
 				// processing the DELETE command --------------------------
-				System.out.println("*All* data in " + BenchData.baseUri.toString()
+				System.out.println("*All* data in " + benchData.baseUri.toString()
 						+ " will be deleted. After that you need to restart");
 				System.out.println("Are you sure you want to do this? Type 'yes'");
 				String answer = sc.nextLine();
 				if (answer.equalsIgnoreCase("YES")) {
 					System.out.println("ok, let's do it");
-					deleteAll(BenchData.service);
+					deleteAll(benchData.service);
 					System.out.println("finished - you need to restart");
 					System.exit(0);
 				} else {
@@ -100,8 +108,8 @@ public class Controller {
 				System.out.println("Terminate message sent");
 			} else if (cmd[0].equalsIgnoreCase("help") || cmd[0].equalsIgnoreCase("h")) {
 				// processing the HELP command ---------------------------------------------
-				System.out.println("Base URL      : " + BenchData.baseUri.toString());
-				System.out.println("Session Id    : " + BenchData.sessionId);
+				System.out.println("Base URL      : " + benchData.baseUri.toString());
+				System.out.println("Session Id    : " + benchData.sessionId);
 				System.out.println("run [msec]    : Start all benchmark process with optional parameter time im msec");
 				System.out.println("script <file> : Start all benchmark script with file name");
 				System.out.println("stop          : Stop all running processes");
@@ -134,7 +142,7 @@ public class Controller {
 		while (more) {
 			EntityList<T> entities = doa.query().count().list();
 			if (entities.getCount() > 0) {
-				BenchData.LOGGER.info("{} to go.", entities.getCount());
+				benchData.LOGGER.info("{} to go.", entities.getCount());
 			} else {
 				more = false;
 			}
@@ -143,7 +151,7 @@ public class Controller {
 				count++;
 			}
 		}
-		BenchData.LOGGER.info("Deleted {} using {}.", count, doa.getClass().getName());
+		benchData.LOGGER.info("Deleted {} using {}.", count, doa.getClass().getName());
 	}
 
 }

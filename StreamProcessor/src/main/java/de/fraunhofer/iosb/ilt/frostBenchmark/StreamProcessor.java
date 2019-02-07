@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 public class StreamProcessor extends MqttHelper {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StreamProcessor.class);
+	public static BenchData benchData = null;
+	public static BenchData resultData = null;
 
 	private static long startTime = 0;
 	public static int qos = 2;
@@ -40,8 +42,13 @@ public class StreamProcessor extends MqttHelper {
 		boolean cleanSession = true; // Non durable subscriptions
 		String protocol = "tcp://";
 
-		BenchData.initialize();
-		Thing benchmarkThing = BenchData.getBenchmarkThing();
+		String baseUriStr = BenchProperties.getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
+		String resultUriStr = BenchProperties.getEnv(BenchData.TAG_RESULT_URL, baseUriStr).trim();
+		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
+		benchData = new BenchData().initialize(baseUriStr);
+		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
+		resultData = new BenchData().initialize(resultUriStr);
+		Thing benchmarkThing = benchData.getBenchmarkThing();
 
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
 
@@ -49,8 +56,8 @@ public class StreamProcessor extends MqttHelper {
 			// create processors for Datastream according to coverage
 			Random random = new Random();
 			int nbProcessors = 0;
-			EntityList<Datastream> datastreams = BenchData.service.datastreams().query()
-					.filter("properties/" + TAG_SESSION + " eq '" + BenchData.sessionId + "'")
+			EntityList<Datastream> datastreams = benchData.service.datastreams().query()
+					.filter("properties/" + BenchData.TAG_SESSION + " eq '" + benchData.sessionId + "'")
 					.select("@iot.id")
 					.top(10000)
 					.list();
@@ -59,7 +66,7 @@ public class StreamProcessor extends MqttHelper {
 				Datastream dataStream = it.next();
 				dsCount++;
 				if (random.nextInt(100) < benchProperties.coverage) {
-					ProcessorWorker processor = new ProcessorWorker(BenchData.broker, clientId + "-" + dataStream.getId().toString(),
+					ProcessorWorker processor = new ProcessorWorker(benchData.broker, clientId + "-" + dataStream.getId().toString(),
 							cleanSession);
 					processor.setDataStreamTopic("v1.0/Datastreams(" + dataStream.getId().toString() + ")/Observations");
 					new Thread(processor).start();
@@ -71,7 +78,7 @@ public class StreamProcessor extends MqttHelper {
 
 			// subscribeAndWait for benchmark commands
 			String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
-			StreamProcessor processor = new StreamProcessor(BenchData.name, BenchData.broker, clientId, cleanSession);
+			StreamProcessor processor = new StreamProcessor(benchData.name, benchData.broker, clientId, cleanSession);
 			processor.subscribeAndWait(topic, qos);
 
 		} catch (MqttException me) {
@@ -121,10 +128,10 @@ public class StreamProcessor extends MqttHelper {
 				// get the results
 				long endTime = System.currentTimeMillis();
 
-				Datastream ds = BenchData.getDatastream("SubsriberCluster");
+				Datastream ds = resultData.getDatastream("SubsriberCluster" + benchData.name);
 				double rate = (1000 * ProcessorWorker.getNotificationsReceived()) / (endTime - startTime);
 				try {
-					BenchData.service.create(new Observation(rate, ds));
+					resultData.service.create(new Observation(rate, ds));
 				} catch (ServiceFailureException e) {
 					LOGGER.trace("Exception: ", e);
 				}

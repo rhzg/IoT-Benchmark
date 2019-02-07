@@ -42,7 +42,7 @@ public class AnalyticClient implements Runnable {
 	public AnalyticClient intialize(String name, int cylces) throws ServiceFailureException, URISyntaxException {
 		myName = name;
 		analytic_cyles = cylces;
-		datastream = BenchData.getDatastream(myName);
+		datastream = AnalyticsCluster.benchData.getDatastream(myName);
 		return this;
 	}
 

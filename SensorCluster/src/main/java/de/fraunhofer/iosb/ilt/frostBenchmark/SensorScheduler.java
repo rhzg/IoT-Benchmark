@@ -37,7 +37,7 @@ public class SensorScheduler {
 	 * TODO pass in settings object instead of using static BenchProperties
 	 */
 	public SensorScheduler() {
-		BenchData.initialize();
+		//BenchData.initialize();
 		settings = new BenchProperties().readFromEnvironment();
 		sensorScheduler = Executors.newScheduledThreadPool(settings.workers);
 		outputScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -58,8 +58,8 @@ public class SensorScheduler {
 
 	private void sendRateObservation (double rate) {
 		try {
-			Datastream ds = BenchData.getDatastream(BenchData.getEnv(BenchData.TAG_NAME, "SensorCluster"));
-			BenchData.service.create(new Observation(rate, ds));
+			Datastream ds = SensorCluster.resultData.getDatastream(SensorCluster.resultData.getEnv(BenchData.TAG_NAME, "SensorCluster"));
+			SensorCluster.resultData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
 			LOGGER.error("Failed.", exc);
 		}		
@@ -93,7 +93,7 @@ public class SensorScheduler {
 				LOGGER.info("Setting up {} sensors...", toAdd);
 				for (int i = haveCount; i < settings.sensors; i++) {
 					String name = "Benchmark." + i;
-					DataSource sensor = new DataSource(BenchData.service).intialize(name);
+					DataSource sensor = new DataSource(SensorCluster.benchData.service).intialize(name);
 					dsList.add(sensor);
 					if ((i - haveCount) % 100 == 0) {
 						LOGGER.info("... {}", i - haveCount);

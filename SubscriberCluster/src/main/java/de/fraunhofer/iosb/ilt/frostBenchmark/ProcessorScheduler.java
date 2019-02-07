@@ -52,8 +52,8 @@ public class ProcessorScheduler {
 
 	private void fetchDatastreams() throws ServiceFailureException {
 		if (allDatastreams.isEmpty()) {
-			EntityList<Datastream> datastreams = BenchData.service.datastreams().query()
-					.filter("properties/" + TAG_SESSION + " eq '" + BenchData.sessionId + "'")
+			EntityList<Datastream> datastreams = SubscriberCluster.benchData.service.datastreams().query()
+					.filter("properties/" + BenchData.TAG_SESSION + " eq '" + SubscriberCluster.benchData.sessionId + "'")
 					.select("@iot.id")
 					.top(10000)
 					.list();
@@ -69,7 +69,7 @@ public class ProcessorScheduler {
 	}
 
 	private void createProcessors() throws MqttException {
-		BenchData.getBenchmarkThing();
+		SubscriberCluster.benchData.getBenchmarkThing();
 		try {
 			fetchDatastreams();
 

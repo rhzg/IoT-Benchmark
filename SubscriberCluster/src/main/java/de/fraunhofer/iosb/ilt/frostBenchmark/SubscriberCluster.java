@@ -22,6 +22,8 @@ public class SubscriberCluster extends MqttHelper {
 
 	public static final int QOS = 2;
 	private static final boolean CLEAN_SESSION = true;
+	public static BenchData benchData = null;
+	public static BenchData resultData = null;
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SubscriberCluster.class);
 
@@ -55,7 +57,7 @@ public class SubscriberCluster extends MqttHelper {
 		scheduler = new ProcessorScheduler(brokerUrl);
 		scheduler.updateSettings(null);
 
-		Thing benchmarkThing = BenchData.getBenchmarkThing();
+		Thing benchmarkThing = benchData.getBenchmarkThing();
 		String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
 		subscribeAndWait(topic, QOS);
 	}
@@ -144,8 +146,8 @@ public class SubscriberCluster extends MqttHelper {
 		long notificationCount = scheduler.getNotificationCount();
 		double rate = (1000.0 * notificationCount) / (endTime - startTime);
 		try {
-			Datastream ds = BenchData.getDatastream(BenchData.getEnv(BenchData.TAG_NAME, "SubscriberCluster"));
-			BenchData.service.create(new Observation(rate, ds));
+			Datastream ds = resultData.getDatastream(resultData.getEnv(benchData.TAG_NAME, "SubscriberCluster"));
+			resultData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException e) {
 			LOGGER.trace("Exception: ", e);
 		}
@@ -157,13 +159,18 @@ public class SubscriberCluster extends MqttHelper {
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
 		String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
 
-		BenchData.initialize();
+		String baseUriStr = BenchProperties.getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
+		String resultUriStr = BenchProperties.getEnv(BenchData.TAG_RESULT_URL, baseUriStr).trim();
+		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
+		benchData = new BenchData().initialize(baseUriStr);
+		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
+		resultData = new BenchData().initialize(resultUriStr);
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
 
-		LOGGER.info("Starting '{}' with a coverage of {}.", BenchData.name, benchProperties.coverage);
+		LOGGER.info("Starting '{}' with a coverage of {}.", benchData.name, benchProperties.coverage);
 
 		try {
-			SubscriberCluster cluster = new SubscriberCluster(BenchData.name, BenchData.broker, clientId, CLEAN_SESSION);
+			SubscriberCluster cluster = new SubscriberCluster(benchData.name, benchData.broker, clientId, CLEAN_SESSION);
 			cluster.init();
 		} catch (MqttException me) {
 			LOGGER.error("MQTT exception", me);

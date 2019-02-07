@@ -67,9 +67,9 @@ public class Scheduler {
 		propertiesMap.put(processName, nameMap);
 		propertiesMap.put(BenchProperties.TAG_STATUS, STATUS.INITIALIZE);
 
-		Thing sessionThing = BenchData.getBenchmarkThing();
+		Thing sessionThing = Controller.benchData.getBenchmarkThing();
 		sessionThing.setProperties(propertiesMap);
-		BenchData.service.update(sessionThing);
+		Controller.benchData.service.update(sessionThing);
 	}
 
 	public void runScript() throws ServiceFailureException, InterruptedException {
@@ -117,12 +117,12 @@ public class Scheduler {
 	}
 
 	public void sendCommands(Map<String, Object> propertiesMap, STATUS status) throws ServiceFailureException {
-		Thing sessionThing = BenchData.getBenchmarkThing();
-		propertiesMap.put(BenchData.TAG_SESSION, BenchData.sessionId);
+		Thing sessionThing = Controller.benchData.getBenchmarkThing();
+		propertiesMap.put(BenchData.TAG_SESSION, Controller.benchData.sessionId);
 		propertiesMap.put(BenchData.TAG_TYPE, BenchData.VALUE_TYPE_CONTROL);
 		propertiesMap.put(BenchProperties.TAG_STATUS, status);
 		sessionThing.setProperties(propertiesMap);
-		BenchData.service.update(sessionThing);
+		Controller.benchData.service.update(sessionThing);
 	}
 
 }

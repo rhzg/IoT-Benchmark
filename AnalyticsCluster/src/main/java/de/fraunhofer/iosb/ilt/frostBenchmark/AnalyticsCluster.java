@@ -16,6 +16,8 @@ public class AnalyticsCluster extends MqttHelper implements TimeoutListener {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AnalyticsCluster.class);
 	public static final int QOS = 2;
+	public static BenchData benchData = null;
+	public static BenchData resultData = null;
 
 	private AnalyticsScheduler scheduler;
 	private ObjectMapper parser;
@@ -35,10 +37,10 @@ public class AnalyticsCluster extends MqttHelper implements TimeoutListener {
 	public void init(BenchProperties benchProperties) throws Throwable {
 		timeoutWatcher.addTimeoutListener(this);
 		scheduler = new AnalyticsScheduler();
-		scheduler.setOutputPeriod(BenchData.outputPeriod);
+		scheduler.setOutputPeriod(benchData.outputPeriod);
 		scheduler.initWorkLoad(null);
 
-		Thing benchmarkThing = BenchData.getBenchmarkThing();
+		Thing benchmarkThing = benchData.getBenchmarkThing();
 		String topic = "v1.0/Things(" + benchmarkThing.getId().toString() + ")/properties";
 		subscribeAndWait(topic, QOS);
 	}
@@ -147,11 +149,17 @@ public class AnalyticsCluster extends MqttHelper implements TimeoutListener {
 		String clientId = "BechmarkAnalyticCluster-" + System.currentTimeMillis();
 		boolean cleanSession = true; // Non durable subscriptions
 
-		BenchData.initialize();
+		String baseUriStr = BenchProperties.getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
+		String resultUriStr = BenchProperties.getEnv(BenchData.TAG_RESULT_URL, baseUriStr).trim();
+		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
+		benchData = new BenchData().initialize(baseUriStr);
+		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
+		resultData = new BenchData().initialize(resultUriStr);
+
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
 
 		LOGGER.info("Starting '{}' with {} Threads to simulate {} Analytic clients with {} msec post period and {} analytic cycles",
-				BenchData.name,
+				benchData.name,
 				benchProperties.workers,
 				benchProperties.analyticLoops,
 				benchProperties.period,
@@ -160,8 +168,8 @@ public class AnalyticsCluster extends MqttHelper implements TimeoutListener {
 
 		try {
 			// Create an instance of the Sample client wrapper
-			LOGGER.debug("using mqtt broker: {}", BenchData.broker);
-			AnalyticsCluster analytics = new AnalyticsCluster(BenchData.name, BenchData.broker, clientId, cleanSession);
+			LOGGER.debug("using mqtt broker: {}", benchData.broker);
+			AnalyticsCluster analytics = new AnalyticsCluster(benchData.name, benchData.broker, clientId, cleanSession);
 			analytics.init(benchProperties);
 		} catch (MqttException me) {
 			LOGGER.error("MQTT exception", me);

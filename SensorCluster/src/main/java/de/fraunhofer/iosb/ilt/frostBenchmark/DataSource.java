@@ -37,7 +37,7 @@ public class DataSource implements Runnable {
 	 */
 	public DataSource intialize(String name) throws ServiceFailureException, URISyntaxException {
 		myName = name;
-		datastream = BenchData.getDatastream(myName);
+		datastream = SensorCluster.benchData.getDatastream(myName);
 		return this;
 	}
 

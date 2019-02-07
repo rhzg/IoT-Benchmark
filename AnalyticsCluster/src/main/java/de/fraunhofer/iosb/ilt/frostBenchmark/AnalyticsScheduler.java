@@ -37,7 +37,7 @@ public class AnalyticsScheduler {
 	 * TODO pass in settings object instead of using static BenchProperties
 	 */
 	public AnalyticsScheduler() {
-		BenchData.initialize();
+		//BenchData.initialize();
 		settings = new BenchProperties().readFromEnvironment();
 		analyticsScheduler = Executors.newScheduledThreadPool(settings.workers);
 		outputScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -58,8 +58,8 @@ public class AnalyticsScheduler {
 
 	private void sendRateObservation (double rate) {
 		try {
-			Datastream ds = BenchData.getDatastream(BenchData.getEnv(BenchData.TAG_NAME, "AnalyticsCluster"));
-			BenchData.service.create(new Observation(rate, ds));
+			Datastream ds = AnalyticsCluster.resultData.getDatastream(AnalyticsCluster.resultData.getEnv(BenchData.TAG_NAME, "AnalyticsCluster"));
+			AnalyticsCluster.resultData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
 			LOGGER.error("Failed.", exc);
 		}
@@ -95,7 +95,7 @@ public class AnalyticsScheduler {
 				LOGGER.info("Setting up {} analytics...", toAdd);
 				for (int i = haveCount; i < settings.analyticJobs; i++) {
 					String name = "Benchmark." + i;
-					AnalyticClient sensor = new AnalyticClient(BenchData.service).intialize(name, settings.analyticLoops);
+					AnalyticClient sensor = new AnalyticClient(AnalyticsCluster.benchData.service).intialize(name, settings.analyticLoops);
 					dsList.add(sensor);
 					if ((i - haveCount) % 100 == 0) {
 						LOGGER.info("... {}", i - haveCount);

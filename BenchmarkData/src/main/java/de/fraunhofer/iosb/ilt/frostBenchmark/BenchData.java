@@ -40,25 +40,34 @@ public class BenchData {
 	public static final String BENCHMARK = "Benchmark";
 	public static final String SESSION = TAG_SESSION;
 	public static final String BASE_URL = "BASE_URL";
+	public static final String TAG_RESULT_URL = "RESULT_URL";
 	public static final String BROKER = "BROKER";
 	public static final String PROXYHOST = "proxyhost";
 	public static final String PROXYPORT = "proxyport";
 
-	public static String name = DFLT_NAME;
-	public static URL baseUri = null;
-	public static SensorThingsService service = null;
-	public static String sessionId;
-	public static String broker;
-	public static int outputPeriod;
+	public String name = DFLT_NAME;
+	public URL baseUri = null;
+	public URL resultUri = null;
+	public SensorThingsService service = null;
+	public SensorThingsService resultService = null;
+	public String sessionId;
+	public String broker;
+	public int outputPeriod;
 
-	private static Thing sessionThing = null;
-	private static final Object lock = new Object();
+	private Thing sessionThing = null;
+	private final Object lock = new Object();
 
-	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BenchData.class);
+	public final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BenchData.class);
 
-	public static void initialize() {
+	
+	public BenchData() {
 		String baseUriStr = getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
-		LOGGER.info("Using SensorThings Service at {}", baseUriStr);
+		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
+
+		initialize(baseUriStr);
+	}
+	
+	public BenchData initialize(String baseUriStr) {
 
 		name = getEnv(TAG_NAME, DFLT_NAME);
 		sessionId = getEnv(BenchData.SESSION, "0815").trim();
@@ -66,14 +75,13 @@ public class BenchData {
 
 		broker = getEnv(BROKER, "localhost").trim();
 		if (!broker.contains(":")) {
-			broker = "tcp://" + BenchData.broker + ":" + DFLT_PORT;
+			broker = "tcp://" + broker + ":" + DFLT_PORT;
 		}
-
 		try {
 			LOGGER.debug("Creating SensorThingsService");
 			baseUri = new URL(baseUriStr);
 			service = new SensorThingsService(baseUri);
-
+			
 			PoolingHttpClientConnectionManager conManager = new PoolingHttpClientConnectionManager();
 			conManager.setMaxTotal(500);
 			conManager.setDefaultMaxPerRoute(200);
@@ -88,9 +96,10 @@ public class BenchData {
 			LOGGER.error("Exception:", e);
 		}
 		LOGGER.trace("Initialized for: {} [SessionId = {}]", baseUriStr, sessionId);
+		return this;
 	}
 
-	public static String getEnv(String name, String deflt) {
+	public String getEnv(String name, String deflt) {
 		String value = System.getenv(name);
 		if (value == null) {
 			return deflt;
@@ -98,7 +107,7 @@ public class BenchData {
 		return value;
 	}
 
-	public static int getEnv(String name, int deflt) {
+	public int getEnv(String name, int deflt) {
 		String value = System.getenv(name);
 		if (value == null) {
 			return deflt;
@@ -112,7 +121,13 @@ public class BenchData {
 		}
 	}
 
-	public static Thing getBenchmarkThing() {
+	/**
+	 * Get the Thing to be used to control the benchmark components. If the thing is not found, it will be created.
+	 * If it was found before, it will be cached and not searched again.
+	 * 
+	 * @return The Benchmark controller thing
+	 */
+	public Thing getBenchmarkThing() {
 		// if sessionThing already found, just return it;
 		if (sessionThing != null) {
 			return sessionThing;
@@ -166,7 +181,7 @@ public class BenchData {
 	 * @return
 	 * @throws de.fraunhofer.iosb.ilt.sta.ServiceFailureException
 	 */
-	public static Datastream getDatastream(String name) throws ServiceFailureException {
+	public Datastream getDatastream(String name) throws ServiceFailureException {
 		Datastream dataStream;
 		LOGGER.debug("getSensor: " + name);
 
@@ -188,7 +203,7 @@ public class BenchData {
 	 * @return
 	 * @throws ServiceFailureException
 	 */
-	private static Datastream createDatastream(String name) throws ServiceFailureException {
+	private Datastream createDatastream(String name) throws ServiceFailureException {
 		Datastream dataStream;
 
 		Sensor sensor = new Sensor(name, "Sensor for creating benchmark data", "text", "Some metadata.");
