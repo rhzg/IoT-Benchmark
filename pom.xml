@@ -75,6 +75,7 @@
 				</executions>
 				<configuration>
 					<excludePackageNames>de.fraunhofer.iosb.ilt.sta.parser.path:de.fraunhofer.iosb.ilt.sta.parser.query</excludePackageNames>
+					<source>8</source>
 				</configuration>
 			</plugin>
 			<plugin>
