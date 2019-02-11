@@ -64,10 +64,6 @@ public class BenchData {
 
 	
 	public BenchData() {
-		String baseUriStr = getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
-		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
-
-		initialize(baseUriStr);
 	}
 	
 	public BenchData initialize(String baseUriStr) {
