@@ -176,12 +176,16 @@ public abstract class MqttHelper implements MqttCallback {
 	public void connectionLost(Throwable cause) {
 		LOGGER.error("Connection to {} lost: {}", brokerUrl, cause.getMessage());
 		LOGGER.info("Exception:", cause);
+		/* not sure what to do after connectionLost
+		 * with the conOpt.setAutomaticReconnect(true) option, this should 
+		 * happen automatically
 		try {
 			client.reconnect();
 		} catch (MqttException exc) {
 			LOGGER.error("Failed to reconnect.", exc);
 			ex = cause;
 		}
+		 */
 	}
 
 	/**
