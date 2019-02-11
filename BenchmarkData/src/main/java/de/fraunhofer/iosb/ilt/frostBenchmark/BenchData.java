@@ -1,5 +1,17 @@
 package de.fraunhofer.iosb.ilt.frostBenchmark;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.geojson.Point;
+import org.slf4j.LoggerFactory;
+
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.Utils;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
@@ -9,17 +21,6 @@ import de.fraunhofer.iosb.ilt.sta.model.Sensor;
 import de.fraunhofer.iosb.ilt.sta.model.Thing;
 import de.fraunhofer.iosb.ilt.sta.model.ext.UnitOfMeasurement;
 import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.geojson.Point;
-import org.slf4j.LoggerFactory;
 
 public class BenchData {
 
@@ -27,7 +28,7 @@ public class BenchData {
 	public static final String DFLT_NAME = "properties";
 
 	public static final String TAG_OUTPUT_PERIOD = "outputPeriod";
-	public static final int DFLT_OUTPUT_PERIOD = 2;
+	public static final int DFLT_OUTPUT_PERIOD = 5;
 
 	public static final int DFLT_PORT = 1883;
 
@@ -56,6 +57,8 @@ public class BenchData {
 
 	private Thing sessionThing = null;
 	private final Object lock = new Object();
+	private String uOM_name = "observation rate";
+	private String uOM_symbol = "observations per sec";
 
 	public final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BenchData.class);
 
@@ -210,7 +213,7 @@ public class BenchData {
 		service.create(sensor);
 		LOGGER.debug("Sensor new id " + String.valueOf(sensor.getId()));
 
-		ObservedProperty obsProp1 = new ObservedProperty(name, URI.create("http://ucom.org/temperature"), "observation rate");
+		ObservedProperty obsProp1 = new ObservedProperty(name, URI.create("http://ucom.org/temperature"), getuOM_name());
 		service.create(obsProp1);
 
 		Thing thing = new Thing(name, "Benchmark Thing");
@@ -222,7 +225,7 @@ public class BenchData {
 		thing.getLocations().add(location);
 
 		dataStream = new Datastream(name, "Benchmark Random Stream", name,
-				new UnitOfMeasurement("observation rate", "observations per sec", ""));
+				new UnitOfMeasurement(getuOM_name(), getuOM_symbol(), ""));
 		dataStream.setThing(thing);
 		dataStream.setSensor(sensor);
 		dataStream.setObservedProperty(obsProp1);
@@ -232,5 +235,21 @@ public class BenchData {
 		service.create(dataStream);
 
 		return dataStream;
+	}
+
+	public String getuOM_name() {
+		return uOM_name;
+	}
+
+	public void setuOM_name(String uOM_name) {
+		this.uOM_name = uOM_name;
+	}
+
+	public String getuOM_symbol() {
+		return uOM_symbol;
+	}
+
+	public void setuOM_symbol(String uOM_symbol) {
+		this.uOM_symbol = uOM_symbol;
 	}
 }

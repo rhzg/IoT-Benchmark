@@ -165,6 +165,8 @@ public class SubscriberCluster extends MqttHelper {
 		benchData = new BenchData().initialize(baseUriStr);
 		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
 		resultData = new BenchData().initialize(resultUriStr);
+		resultData.setuOM_name("Million Subscriptions per Second");
+		resultData.setuOM_symbol("msps");
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
 
 		LOGGER.info("Starting '{}' with a coverage of {}.", benchData.name, benchProperties.coverage);

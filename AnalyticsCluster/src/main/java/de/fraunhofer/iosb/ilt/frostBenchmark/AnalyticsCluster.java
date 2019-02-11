@@ -155,6 +155,8 @@ public class AnalyticsCluster extends MqttHelper implements TimeoutListener {
 		benchData = new BenchData().initialize(baseUriStr);
 		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
 		resultData = new BenchData().initialize(resultUriStr);
+		resultData.setuOM_name("Million Analytic Cycles per Second");
+		resultData.setuOM_symbol("mcps");
 
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
 

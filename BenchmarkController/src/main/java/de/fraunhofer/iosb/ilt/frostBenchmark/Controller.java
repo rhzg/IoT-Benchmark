@@ -21,10 +21,6 @@ public class Controller {
 
 	public static BenchData benchData = null;
 
-	static private String getNextWord() {
-		return null;
-	}
-
 	// make custom scanner?
 	// init with args
 	// consume args while not empty then switch to System.in
@@ -33,7 +29,6 @@ public class Controller {
 		String cmdInfo = "Available command are <run [msec]>, <stop>, <init>, <script file>, <terminate>, <help>, <delete>, <quit>";
 
 		String baseUriStr = BenchProperties.getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
-		String resultUriStr = BenchProperties.getEnv(BenchData.TAG_RESULT_URL, baseUriStr).trim();
 		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
 		benchData = new BenchData().initialize(baseUriStr);
 		
