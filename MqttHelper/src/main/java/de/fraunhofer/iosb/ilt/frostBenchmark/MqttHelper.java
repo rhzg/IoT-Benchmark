@@ -186,6 +186,9 @@ public abstract class MqttHelper implements MqttCallback {
 			ex = cause;
 		}
 		 */
+
+		LOGGER.error("got connectionLost - exist with 1");
+		System.exit(1);
 	}
 
 	/**
