@@ -4,11 +4,11 @@ services:
   sensorclusterLow:
     image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Sensor_Low
+      - NAME=SensorCluster_Low
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
+      - SESSION=0001
       - WORKERS=10
       - SENSORS=50
       - PERIOD=1000
@@ -16,11 +16,11 @@ services:
   sensorclusterMedium:
     image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Sensor_Medium
+      - NAME=SensorCluster_Medium
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
+      - SESSION=0001
       - WORKERS=10
       - SENSORS=50
       - PERIOD=1000
@@ -28,11 +28,11 @@ services:
   sensorclusterHigh:
     image: fraunhoferiosb/sensorcluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Sensor_High
+      - NAME=SensorCluster_High
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
+      - SESSION=0001
       - WORKERS=10
       - SENSORS=50
       - PERIOD=1000
@@ -40,32 +40,32 @@ services:
   subscriberClusterLow:
     image: fraunhoferiosb/subscribercluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Listener_Low
+      - NAME=SubscriberCluster_Low
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
-      - COVERAGE=10
+      - SESSION=0001
+      - COVERAGE=0
 
   subscriberClusterMedium:
     image: fraunhoferiosb/subscribercluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Listener_Medium
+      - NAME=SubscriberCluster_Medium
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
-      - COVERAGE=10
+      - SESSION=0001
+      - COVERAGE=0
 
   subscriberClusterHigh:
     image: fraunhoferiosb/subscribercluster:0.0.1-SNAPSHOT
     environment:
-      - NAME=Listener_High
+      - NAME=SubscriberCluster_High
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
-      - COVERAGE=10
+      - SESSION=0001
+      - COVERAGE=0
 
   analyticsClusterLow:
     image: fraunhoferiosb/analyticscluster:0.0.1-SNAPSHOT
@@ -74,8 +74,8 @@ services:
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
-      - ANALYTIC_JOBS=5
+      - SESSION=0001
+      - ANALYTIC_JOBS=0
       - ANALYTIC_LOOPS=1000
       - JITTER=5
       - PERIOD=1000
@@ -88,8 +88,8 @@ services:
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
-      - ANALYTIC_JOBS=5
+      - SESSION=0001
+      - ANALYTIC_JOBS=0
       - ANALYTIC_LOOPS=1000
       - JITTER=5
       - PERIOD=1000
@@ -102,8 +102,8 @@ services:
       - BASE_URL=http://10.56.4.54:8080/FROST-Server/v1.0/
       - RESULT_URL=https://frost-server-hzg.docker01.ilt-dmz.iosb.fraunhofer.de/v1.0
       - BROKER=tcp://10.56.4.54:1883
-      - SESSION=0815
-      - ANALYTIC_JOBS=5
+      - SESSION=0001
+      - ANALYTIC_JOBS=0
       - ANALYTIC_LOOPS=1000
       - JITTER=5
       - PERIOD=1000
