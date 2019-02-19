@@ -95,7 +95,7 @@ public class AnalyticsScheduler {
 				LOGGER.info("Setting up {} analytics...", toAdd);
 				for (int i = haveCount; i < settings.analyticJobs; i++) {
 					String name = "Benchmark." + i;
-					AnalyticClient sensor = new AnalyticClient(AnalyticsCluster.benchData.service).intialize(name, settings.analyticLoops);
+					AnalyticClient sensor = new AnalyticClient(AnalyticsCluster.benchData).intialize(name, settings.analyticLoops);
 					dsList.add(sensor);
 					if ((i - haveCount) % 100 == 0) {
 						LOGGER.info("... {}", i - haveCount);
@@ -157,15 +157,11 @@ public class AnalyticsScheduler {
 		}
 
 		stopTime = System.currentTimeMillis();
-		int entries = 0;
+		printStats();
+
 		for (AnalyticClient sensor : dsList) {
-			entries += sensor.reset();
+			sensor.reset();
 		}
-
-		double rate = 1000.0 * entries / (stopTime - startTime);
-		LOGGER.info("-=> {} entries created per sec", String.format("%.2f", rate));
-
-		sendRateObservation(rate);
 
 		LOGGER.info("Benchmark finished");
 		running = false;
@@ -173,13 +169,14 @@ public class AnalyticsScheduler {
 
 	public void printStats() {
 		long curTime = System.currentTimeMillis();
-		int entries = 0;
-		for (AnalyticClient sensor : dsList) {
-			entries += sensor.getCreatedObsCount();
+		long analyticCycles = 0;
+		for (AnalyticClient worker : dsList) {
+			LOGGER.info("raw {}, obs {}, cyl {}", analyticCycles, worker.getCreatedObsCount(),worker.getAnalyticCycles());
+			analyticCycles += worker.getCreatedObsCount() * worker.getAnalyticCycles();
 		}
 
-		double rate = 1000.0 * entries / (curTime - startTime);
-		LOGGER.info("-=> {}/s", String.format("%.2f", rate));
+		double rate = analyticCycles / ((curTime - startTime));
+		LOGGER.info("Cycles done: {} [M/s]", String.format("%.2f", rate));
 
 		sendRateObservation(rate);
 	}

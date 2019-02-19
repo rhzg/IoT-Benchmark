@@ -9,10 +9,15 @@ REM set BROKER=192.168.99.100
 set BROKER=localhost
 
 REM Benchmark Session Identifier within Benchmark thing to be used
-set SESSION=0815
+set SESSION=0001
+set outputPeriod=1
 
 REM number of parallel Sensors data providers
 set WORKERS=10
+
+REM calculation cyles and jobs
+set ANALYTIC_LOOPS=100000
+set ANALYTIC_JOBS= 10
 
 REM msec delay between observations
 set PERIOD=1000

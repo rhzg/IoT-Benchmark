@@ -1,25 +1,25 @@
 package de.fraunhofer.iosb.ilt.frostBenchmark;
 
+import java.net.URISyntaxException;
+import java.util.concurrent.ScheduledFuture;
+
+import org.slf4j.LoggerFactory;
+
 import de.fraunhofer.iosb.ilt.sta.ServiceFailureException;
 import de.fraunhofer.iosb.ilt.sta.model.Datastream;
 import de.fraunhofer.iosb.ilt.sta.model.Observation;
 import de.fraunhofer.iosb.ilt.sta.model.ext.EntityList;
-import de.fraunhofer.iosb.ilt.sta.query.Query;
-import de.fraunhofer.iosb.ilt.sta.service.SensorThingsService;
-import java.net.URISyntaxException;
-import java.util.concurrent.ScheduledFuture;
-import org.slf4j.LoggerFactory;
 
 public class AnalyticClient implements Runnable {
 
 	public static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AnalyticClient.class);
 
-	private SensorThingsService service;
+	private BenchData benchData;
 	private String myName;
 	private int queryCount = 0;
 	private long startTime;
 	private long lastTime;
-	private int analytic_cyles;
+	private int analyticCyles;
 	private double someFancyResult;
 
 	private Datastream datastream;
@@ -27,8 +27,8 @@ public class AnalyticClient implements Runnable {
 	public Thread myThread = null;
 	private ScheduledFuture<?> schedulerHandle;
 
-	public AnalyticClient(SensorThingsService sensorThingsService) {
-		service = sensorThingsService;
+	public AnalyticClient(BenchData benchDataForAnalytics) {
+		benchData = benchDataForAnalytics;
 	}
 
 	/**
@@ -41,8 +41,8 @@ public class AnalyticClient implements Runnable {
 	 */
 	public AnalyticClient intialize(String name, int cylces) throws ServiceFailureException, URISyntaxException {
 		myName = name;
-		analytic_cyles = cylces;
-		datastream = AnalyticsCluster.benchData.getDatastream(myName);
+		analyticCyles = cylces;
+		datastream = benchData.getDatastream(myName);
 		return this;
 	}
 
@@ -69,13 +69,20 @@ public class AnalyticClient implements Runnable {
 	}
 
 	private void doSomeAnalytics(EntityList<Observation> obs) {
-		// TODO: do some fancy stuff here
-		for (int i = 0; i < analytic_cyles; i++) {
-			someFancyResult = 0.0;
+		// do some fancy stuff here to generate some cpu load
+		someFancyResult = 0.0;
+		for (int i = 0; i < analyticCyles; i++) {
+			someFancyResult *= 0.123456789;
 			for (Observation o : obs) {
 				someFancyResult += Double.parseDouble(o.getResult().toString());
 				someFancyResult += Math.sqrt(someFancyResult * i);
-				someFancyResult = Math.log(someFancyResult);
+				someFancyResult = Math.log(someFancyResult*i);
+				someFancyResult = Math.sin(someFancyResult*i);
+				someFancyResult = Math.cos(someFancyResult*i);
+				someFancyResult = Math.tan(someFancyResult*i);
+				someFancyResult = Math.asin(someFancyResult*i);
+				someFancyResult = Math.acos(someFancyResult*i);
+				someFancyResult = Math.atan(someFancyResult*i);
 			}	 
 		}
 	}
@@ -99,6 +106,10 @@ public class AnalyticClient implements Runnable {
 
 	public int getCreatedObsCount() {
 		return queryCount;
+	}
+	
+	public int getAnalyticCycles() {
+		return analyticCyles;
 	}
 
 	public ScheduledFuture<?> getSchedulerHandle() {
