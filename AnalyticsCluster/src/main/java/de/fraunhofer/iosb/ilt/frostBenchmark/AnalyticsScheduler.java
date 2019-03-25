@@ -139,7 +139,7 @@ public class AnalyticsScheduler {
 			currentDelay += delayPerSensor;
 		}
 
-		if (outputTask == null) {
+		if ((outputTask == null) && (outputPeriod > 0)) {
 			outputTask = outputScheduler.scheduleAtFixedRate(this::printStats, outputPeriod, outputPeriod, TimeUnit.SECONDS);
 		}
 	}
@@ -171,7 +171,7 @@ public class AnalyticsScheduler {
 		long curTime = System.currentTimeMillis();
 		long analyticCycles = 0;
 		for (AnalyticClient worker : dsList) {
-			LOGGER.info("raw {}, obs {}, cyl {}", analyticCycles, worker.getCreatedObsCount(),worker.getAnalyticCycles());
+			LOGGER.debug("raw {}, obs {}, cyl {}", analyticCycles, worker.getCreatedObsCount(),worker.getAnalyticCycles());
 			analyticCycles += worker.getCreatedObsCount() * worker.getAnalyticCycles();
 		}
 

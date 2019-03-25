@@ -137,7 +137,7 @@ public class SensorScheduler {
 			currentDelay += delayPerSensor;
 		}
 
-		if (outputTask == null) {
+		if ((outputTask == null) && (outputPeriod > 0)) {
 			LOGGER.info("starting reporter with {} sec initial delay and {} report period", outputPeriod, outputPeriod);
 			outputTask = outputScheduler.scheduleAtFixedRate(this::printStats, outputPeriod, outputPeriod, TimeUnit.SECONDS);
 		}

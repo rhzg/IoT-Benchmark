@@ -36,7 +36,7 @@ public class SubscriberCluster extends MqttHelper {
 	private String name = "properties";
 	private String brokerUrl;
 	private STATUS currentState;
-	
+
 	/**
 	 * How many seconds between stats outputs.
 	 */
@@ -44,8 +44,12 @@ public class SubscriberCluster extends MqttHelper {
 	private ScheduledExecutorService outputScheduler;
 	private ScheduledFuture<?> outputTask;
 
-	
-	public SubscriberCluster(String name, String brokerUrl, String clientId, boolean cleanSession) throws MqttException {
+	public void setOutoutPeriod(int p) {
+		outputPeriod = p;
+	}
+
+	public SubscriberCluster(String name, String brokerUrl, String clientId, boolean cleanSession)
+			throws MqttException {
 		super(brokerUrl, clientId, cleanSession);
 		this.parser = new ObjectMapper();
 		this.name = name;
@@ -63,14 +67,16 @@ public class SubscriberCluster extends MqttHelper {
 	}
 
 	/**
-	 * @param topic The topic the message arrived on.
+	 * @param topic   The topic the message arrived on.
 	 * @param message The message that arrived
-	 * @throws org.eclipse.paho.client.mqttv3.MqttException if MQTT is confused.
-	 * @throws URISyntaxException If your URLs are bad.
+	 * @throws                         org.eclipse.paho.client.mqttv3.MqttException
+	 *                                 if MQTT is confused.
+	 * @throws URISyntaxException      If your URLs are bad.
 	 * @throws ServiceFailureException If the SensorThings Service has a hickup.
 	 */
 	@Override
-	public void messageArrived(String topic, MqttMessage message) throws MqttException, ServiceFailureException, URISyntaxException {
+	public void messageArrived(String topic, MqttMessage message)
+			throws MqttException, ServiceFailureException, URISyntaxException {
 		JsonNode msg = null;
 		try {
 			msg = parser.readTree(new String(message.getPayload()));
@@ -94,40 +100,40 @@ public class SubscriberCluster extends MqttHelper {
 
 		LOGGER.info("Entering {} mode", benchState);
 		switch (benchState) {
-			case INITIALIZE:
-				scheduler.updateSettings(myProperties);
-				break;
+		case INITIALIZE:
+			scheduler.updateSettings(myProperties);
+			break;
 
-			case RUNNING:
-				// start the client
-				if (currentState == STATUS.RUNNING) {
-					// settings update...
-					printStats();
-				}
-				LOGGER.info("Starting Processor Test");
-				startStats();
-				scheduler.updateSettings(myProperties);
-				break;
-
-			case FINISHED:
-				// stop reporter task
-				if (outputTask != null) {
-					outputTask.cancel(true);
-					outputTask = null;
-				}
-				// get the results
+		case RUNNING:
+			// start the client
+			if (currentState == STATUS.RUNNING) {
+				// settings update...
 				printStats();
-				break;
+			}
+			LOGGER.info("Starting Processor Test");
+			startStats();
+			scheduler.updateSettings(myProperties);
+			break;
 
-			case TERMINATE:
-				LOGGER.info("Terminate Command received - exit process");
-				setState(STATE.DISCONNECT);
-				LOGGER.info("Terminate");
-				scheduler.terminate();
-				break;
+		case FINISHED:
+			// stop reporter task
+			if (outputTask != null) {
+				outputTask.cancel(true);
+				outputTask = null;
+			}
+			// get the results
+			printStats();
+			break;
 
-			default:
-				LOGGER.error("Unhandled state: {}", benchState);
+		case TERMINATE:
+			LOGGER.info("Terminate Command received - exit process");
+			setState(STATE.DISCONNECT);
+			LOGGER.info("Terminate");
+			scheduler.terminate();
+			break;
+
+		default:
+			LOGGER.error("Unhandled state: {}", benchState);
 		}
 		currentState = benchState;
 	}
@@ -135,8 +141,9 @@ public class SubscriberCluster extends MqttHelper {
 	private void startStats() {
 		startTime = System.currentTimeMillis();
 		scheduler.resetNotificationCount();
-		if (outputTask == null) {
-			outputTask = outputScheduler.scheduleAtFixedRate(this::printStats, outputPeriod, outputPeriod, TimeUnit.SECONDS);
+		if ((outputTask == null) && (outputPeriod > 0)) {
+			outputTask = outputScheduler.scheduleAtFixedRate(this::printStats, outputPeriod, outputPeriod,
+					TimeUnit.SECONDS);
 		}
 	}
 
@@ -146,7 +153,7 @@ public class SubscriberCluster extends MqttHelper {
 		long notificationCount = scheduler.getNotificationCount();
 		double rate = (1000.0 * notificationCount) / (endTime - startTime);
 		try {
-			Datastream ds = resultData.getDatastream(resultData.getEnv(benchData.TAG_NAME, "SubscriberCluster"));
+			Datastream ds = resultData.getDatastream(resultData.getEnv(BenchData.TAG_NAME, "SubscriberCluster"));
 			resultData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException e) {
 			LOGGER.trace("Exception: ", e);
@@ -158,21 +165,25 @@ public class SubscriberCluster extends MqttHelper {
 
 	public static void main(String[] args) throws IOException, URISyntaxException, ServiceFailureException {
 		String clientId = "BechmarkProcessor-" + System.currentTimeMillis();
-
-		String baseUriStr = BenchProperties.getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/").trim();
+		String baseUriStr = BenchProperties.getEnv(BenchData.BASE_URL, "http://localhost:8080/FROST-Server/v1.0/")
+				.trim();
 		String resultUriStr = BenchProperties.getEnv(BenchData.TAG_RESULT_URL, baseUriStr).trim();
+
 		LOGGER.info("Using SensorThings Service at {} for benchmark data", baseUriStr);
 		benchData = new BenchData().initialize(baseUriStr);
 		LOGGER.info("Using SensorThings Service at {} for result data", resultUriStr);
 		resultData = new BenchData().initialize(resultUriStr);
 		resultData.setuOM_name("Million Subscriptions per Second");
 		resultData.setuOM_symbol("msps");
+
 		BenchProperties benchProperties = new BenchProperties().readFromEnvironment();
 
 		LOGGER.info("Starting '{}' with a coverage of {}.", benchData.name, benchProperties.coverage);
 
 		try {
-			SubscriberCluster cluster = new SubscriberCluster(benchData.name, benchData.broker, clientId, CLEAN_SESSION);
+			SubscriberCluster cluster = new SubscriberCluster(benchData.name, benchData.broker, clientId,
+					CLEAN_SESSION);
+			cluster.setOutoutPeriod(resultData.outputPeriod);
 			cluster.init();
 		} catch (MqttException me) {
 			LOGGER.error("MQTT exception", me);
