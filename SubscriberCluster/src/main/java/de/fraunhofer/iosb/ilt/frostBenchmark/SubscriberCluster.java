@@ -156,7 +156,7 @@ public class SubscriberCluster extends MqttHelper {
 			Datastream ds = resultData.getDatastream(resultData.getEnv(BenchData.TAG_NAME, "SubscriberCluster"));
 			resultData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException e) {
-			LOGGER.trace("Exception: ", e);
+			LOGGER.error("Exception: ", e);
 		}
 
 		LOGGER.info("-=> {} Notifications received", notificationCount);

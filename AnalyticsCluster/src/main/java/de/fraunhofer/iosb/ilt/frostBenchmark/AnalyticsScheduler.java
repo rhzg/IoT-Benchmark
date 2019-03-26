@@ -61,7 +61,7 @@ public class AnalyticsScheduler {
 			Datastream ds = AnalyticsCluster.resultData.getDatastream(AnalyticsCluster.resultData.getEnv(BenchData.TAG_NAME, "AnalyticsCluster"));
 			AnalyticsCluster.resultData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
-			LOGGER.error("Failed.", exc);
+			LOGGER.error("Failed to send current rate observation.", exc);
 		}
 	}
 

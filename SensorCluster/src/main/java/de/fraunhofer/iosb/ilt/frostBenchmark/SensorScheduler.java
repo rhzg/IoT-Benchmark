@@ -61,7 +61,7 @@ public class SensorScheduler {
 			Datastream ds = SensorCluster.resultData.getDatastream(SensorCluster.resultData.getEnv(BenchData.TAG_NAME, "SensorCluster"));
 			SensorCluster.resultData.service.create(new Observation(rate, ds));
 		} catch (ServiceFailureException exc) {
-			LOGGER.error("Failed.", exc);
+			LOGGER.error("Failed to send current rate observation.", exc);
 		}		
 	}
 
