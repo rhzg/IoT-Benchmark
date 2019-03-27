@@ -69,7 +69,7 @@ public class BenchData {
 	public BenchData initialize(String baseUriStr) {
 
 		name = getEnv(TAG_NAME, DFLT_NAME);
-		sessionId = getEnv(BenchData.SESSION, "0815").trim();
+		sessionId = getEnv(BenchData.SESSION, "0001").trim();
 		outputPeriod = getEnv(TAG_OUTPUT_PERIOD, DFLT_OUTPUT_PERIOD);
 
 		broker = getEnv(BROKER, "localhost").trim();
