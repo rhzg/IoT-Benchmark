@@ -15,8 +15,8 @@ public class DataSource implements Runnable {
 	private SensorThingsService service;
 	private String myName;
 	private int createdObsCount = 0;
-	private long startTime;
-	private long lastTime;
+	private long startTime = 0;
+	private long lastTime = 0;
 
 	private Datastream datastream;
 

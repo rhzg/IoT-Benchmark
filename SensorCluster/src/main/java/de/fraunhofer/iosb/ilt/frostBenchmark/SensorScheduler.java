@@ -156,6 +156,7 @@ public class SensorScheduler {
 		}
 
 		stopTime = System.currentTimeMillis();
+		
 		int entries = 0;
 		for (DataSource sensor : dsList) {
 			entries += sensor.reset();
